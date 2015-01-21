@@ -1,2 +1,4 @@
-# database-implementation
-database implementation
+summer-snow
+===========
+
+DB implementation project
