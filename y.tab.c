@@ -86,10 +86,10 @@
 
 
 /* Copy the first part of user declarations.  */
-#line 2 "Parser.y"
+#line 2 "src/Parser.y"
 
 
-	#include "include/ParseTree.h" 
+	#include "src/include/ParseTree.h" 
 	#include <stdio.h>
 	#include <string.h>
 	#include <stdlib.h>
@@ -124,7 +124,7 @@
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 20 "Parser.y"
+#line 20 "src/Parser.y"
 {
  	struct Operand *myOperand;
 	struct ComparisonOp *myComparison; 
@@ -1342,7 +1342,7 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 56 "Parser.y"
+#line 56 "src/Parser.y"
     {
 	// here we need to pre-pend the OrList to the AndList
 	// first we allocate space for this node
@@ -1359,7 +1359,7 @@ yyreduce:
     break;
 
   case 3:
-#line 71 "Parser.y"
+#line 71 "src/Parser.y"
     {
 	// just return the OrList!
 	(yyval.myAndList) = (struct AndList *) malloc (sizeof (struct AndList));
@@ -1370,7 +1370,7 @@ yyreduce:
     break;
 
   case 4:
-#line 81 "Parser.y"
+#line 81 "src/Parser.y"
     { 
 	// here we have to hang the condition off the left of the OrList
 	(yyval.myOrList) = (struct OrList *) malloc (sizeof (struct OrList));	
@@ -1380,7 +1380,7 @@ yyreduce:
     break;
 
   case 5:
-#line 89 "Parser.y"
+#line 89 "src/Parser.y"
     {
 	// nothing to hang off of the right
 	(yyval.myOrList) = (struct OrList *) malloc (sizeof (struct OrList));
@@ -1390,7 +1390,7 @@ yyreduce:
     break;
 
   case 6:
-#line 98 "Parser.y"
+#line 98 "src/Parser.y"
     {
 	// in this case we have a simple literal/variable comparison
 	(yyval.myComparison) = (yyvsp[(2) - (3)].myComparison);
@@ -1400,7 +1400,7 @@ yyreduce:
     break;
 
   case 7:
-#line 107 "Parser.y"
+#line 107 "src/Parser.y"
     {
 	// construct and send up the comparison
 	(yyval.myComparison) = (struct ComparisonOp *) malloc (sizeof (struct ComparisonOp));
@@ -1409,7 +1409,7 @@ yyreduce:
     break;
 
   case 8:
-#line 114 "Parser.y"
+#line 114 "src/Parser.y"
     {
 	// construct and send up the comparison
 	(yyval.myComparison) = (struct ComparisonOp *) malloc (sizeof (struct ComparisonOp));
@@ -1418,7 +1418,7 @@ yyreduce:
     break;
 
   case 9:
-#line 121 "Parser.y"
+#line 121 "src/Parser.y"
     {
 	// construct and send up the comparison
 	(yyval.myComparison) = (struct ComparisonOp *) malloc (sizeof (struct ComparisonOp));
@@ -1427,7 +1427,7 @@ yyreduce:
     break;
 
   case 10:
-#line 129 "Parser.y"
+#line 129 "src/Parser.y"
     {
 	// construct and send up the operand containing the string
 	(yyval.myOperand) = (struct Operand *) malloc (sizeof (struct Operand));
@@ -1437,7 +1437,7 @@ yyreduce:
     break;
 
   case 11:
-#line 137 "Parser.y"
+#line 137 "src/Parser.y"
     {
 	// construct and send up the operand containing the FP number
 	(yyval.myOperand) = (struct Operand *) malloc (sizeof (struct Operand));
@@ -1447,7 +1447,7 @@ yyreduce:
     break;
 
   case 12:
-#line 145 "Parser.y"
+#line 145 "src/Parser.y"
     {
 	// construct and send up the operand containing the integer
 	(yyval.myOperand) = (struct Operand *) malloc (sizeof (struct Operand));
@@ -1457,7 +1457,7 @@ yyreduce:
     break;
 
   case 13:
-#line 153 "Parser.y"
+#line 153 "src/Parser.y"
     {
 	// construct and send up the operand containing the name 
 	(yyval.myOperand) = (struct Operand *) malloc (sizeof (struct Operand));
@@ -1682,7 +1682,7 @@ yyreturn:
 }
 
 
-#line 161 "Parser.y"
+#line 161 "src/Parser.y"
 
 
 

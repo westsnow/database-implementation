@@ -60,7 +60,7 @@
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 20 "Parser.y"
+#line 20 "src/Parser.y"
 {
  	struct Operand *myOperand;
 	struct ComparisonOp *myComparison; 
