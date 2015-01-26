@@ -31,9 +31,9 @@ int main () {
 	myComparison.Print ();
 
 	// now open up the text file and start procesing it
-
-        FILE *tableFile = fopen ("../debug_data/lineitem.tbl", "r");
-
+        FILE *tableFile = fopen ("../debug_data/small/lineitem.tbl", "r");
+        Record temp;
+        Schema mySchema ("catalog", "lineitem");
 
 	//char *bits = literal.GetBits ();
 	//cout << " numbytes in rec " << ((int *) bits)[0] << endl;

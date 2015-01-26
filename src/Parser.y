@@ -1,7 +1,7 @@
  
 %{
 
-	#include "src/include/ParseTree.h" 
+	#include "include/ParseTree.h" 
 	#include <stdio.h>
 	#include <string.h>
 	#include <stdlib.h>
