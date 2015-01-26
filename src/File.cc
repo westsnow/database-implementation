@@ -23,10 +23,10 @@ Page :: Page () {
 	}
 }
 
+
 Page :: ~Page () {
 	delete myRecs;
 }
-
 
 void Page :: EmptyItOut () {
 
@@ -186,7 +186,13 @@ void File :: GetPage (Page *putItHere, off_t whichPage) {
 	read (myFilDes, bits, PAGE_SIZE);
 	putItHere->FromBinary (bits);
 	delete [] bits;
-	
+}
+
+void File :: AddPageToEnd(Page *addMe){
+	if( curLength == 0)
+		AddPage (addMe, 0);
+	else
+		AddPage (addMe, curLength - 1);
 }
 
 
@@ -252,9 +258,9 @@ void File :: Open (int fileLen, char *fName) {
 
 	// read in the buffer if needed
 	if (fileLen != 0) {
-
 		// read in the first few bits, which is the page size
 		lseek (myFilDes, 0, SEEK_SET);
+		//&curLength is a small buffer which reads the first off_t from file, indicating the page number of the file
 		read (myFilDes, &curLength, sizeof (off_t));
 
 	} else {

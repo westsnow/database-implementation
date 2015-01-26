@@ -27,7 +27,7 @@ class Record {
 friend class ComparisonEngine;
 friend class Page;
 
-private:
+public:
 	char *bits;
 	char* GetBits ();
 	void SetBits (char *bits);

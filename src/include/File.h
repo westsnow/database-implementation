@@ -12,7 +12,7 @@ class Record;
 using namespace std;
 
 class Page {
-private:
+public:
 	TwoWayList <Record> *myRecs;
 	
 	int numRecs;
@@ -73,6 +73,10 @@ public:
 	// if the write is past the end of the file, all of the new pages that
 	// are before the page to be written are zeroed out
 	void AddPage (Page *addMe, off_t whichPage);
+
+
+    // add a new page to the end of the file
+	void AddPageToEnd (Page *addMe);
 
 	// closes the file and returns the file length (in number of pages)
 	int Close ();

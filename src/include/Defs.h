@@ -5,7 +5,8 @@
 #define MAX_ANDS 20
 #define MAX_ORS 20
 
-#define PAGE_SIZE 131072
+// #define PAGE_SIZE 131072
+#define PAGE_SIZE 1024
 
 
 enum Target {Left, Right, Literal};

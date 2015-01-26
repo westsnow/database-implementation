@@ -82,7 +82,7 @@ Schema :: Schema (char *fName, char *relName) {
 
 	// suck in the file name
 	fscanf (foo, "%s", space);
-	totscans++;
+	totscans++; // record the line numbers before the info we want
 	fileName = strdup (space);
 
 	// count the number of attributes specified
@@ -131,6 +131,7 @@ Schema :: Schema (char *fName, char *relName) {
 	fclose (foo);
 }
 
+//memory problem?
 Schema :: ~Schema () {
 	delete [] myAtts;
 	myAtts = 0;

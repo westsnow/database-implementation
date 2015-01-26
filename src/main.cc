@@ -31,8 +31,12 @@ int main () {
 	myComparison.Print ();
 
 	// now open up the text file and start procesing it
+<<<<<<< Updated upstream
         FILE *tableFile = fopen ("../debug_data/lineitem.tbl", "r");
 
+=======
+        FILE *tableFile = fopen ("/Users/westsnow/Documents/workspace/dbi/stage1/summer-snow/src/Data/10M/lineitem.tbl.small", "r");
+>>>>>>> Stashed changes
         Record temp;
         Schema mySchema ("catalog", "lineitem");
 
@@ -50,11 +54,11 @@ int main () {
 			cerr << counter << "\n";
 		}
 
-		if (comp.Compare (&temp, &literal, &myComparison))
+		if (comp.Compare (&temp, &literal, &myComparison)){
                 	temp.Print (&mySchema);
 
         }
-
+    }
 }
 
 
