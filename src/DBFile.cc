@@ -46,17 +46,22 @@ void DBFile::Load (Schema &f_schema, char *loadpath) {
 
 	FILE *tableFile = fopen (loadpath, "r");
 	Record temp;
+
+	//open file to write records
+
 	File file;
+	file.Open(1, f_schema.fileName);
 
-
-
+	//empty buffer before using
 	page_buffer.EmptyItOut();
 
+	//try to fill buffer, when full save to file
 	while (temp.SuckNextRecord (&f_schema, tableFile) == 1) {
 		if(page_buffer.Append(&temp) == 0){
-
+			file.AddPageToEnd(&page_buffer);
 		}
-
+		page_buffer.EmptyItOut();
+		page_buffer.Append(&temp);
 	}
 }
 
