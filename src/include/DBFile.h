@@ -14,6 +14,7 @@ typedef enum {heap, sorted, tree} fType;
 
 class DBFile {
 	Page page_buffer;
+	char *bin_path = "../binary_data/";
 
 public:
 	DBFile (); 

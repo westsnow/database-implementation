@@ -28,7 +28,7 @@ class Schema {
 
 	// gives the physical location of the binary file storing the relation
 	char *fileName;
-
+	char *relName;
 	friend class Record;
 
 public:
@@ -53,6 +53,8 @@ public:
 	// this constructs a sort order structure that can be used to
 	// place a lexicographic ordering on the records using this type of schema
 	int GetSortOrder (OrderMaker &order);
+
+	char* getSchemaName();
 
 	~Schema ();
 

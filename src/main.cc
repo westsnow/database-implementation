@@ -13,7 +13,7 @@ extern struct AndList *final;
 
 int main () {
 
-	char *dbfile_dir = "../binary_data/region";
+	char *dbfile_dir = "region";
 	DBFile dbfile;
 	cout << "DBFile will be created at " << dbfile_dir << endl;
 	cout << dbfile.Create (dbfile_dir, heap, NULL);

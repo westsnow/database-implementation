@@ -23,7 +23,10 @@ int DBFile::Create (char *f_path, fType f_type, void *startup) {
 
 	// construct path of the header meta-data file
 	char header_path[100];
+	char final_path[100];
+	sprintf (final_path, "%s%s", bin_path, f_path);
 	sprintf (header_path, "%s.header", f_path);
+
 
 	// write meta-data file depending on type of file
 	header_file.open(header_path);
@@ -36,7 +39,7 @@ int DBFile::Create (char *f_path, fType f_type, void *startup) {
 
 	header_file.close();
 
-	file.Open(0,f_path);
+	file.Open(0,final_path);
 
 
 	return 1;
@@ -50,7 +53,11 @@ void DBFile::Load (Schema &f_schema, char *loadpath) {
 	//open file to write records
 
 	File file;
-	file.Open(1, f_schema.fileName);
+	char final_path[100];
+	sprintf(final_path, "%s%s", bin_path, f_schema.getSchemaName());
+
+
+	file.Open(1, final_path);
 
 	//empty buffer before using
 	page_buffer.EmptyItOut();
