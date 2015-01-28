@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 
-
+//Pages from 1 to (n-1)
 Page :: Page () {
 	curSizeInBytes = sizeof (int);
 	numRecs = 0;
