@@ -55,7 +55,7 @@ void DBFile::Load (Schema &f_schema, char *loadpath) {
 	File file;
 	char final_path[100];
 	sprintf(final_path, "%s%s", bin_path, f_schema.getSchemaName());
-
+	cout<<final_path;
 
 	file.Open(1, final_path);
 
