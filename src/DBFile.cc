@@ -63,6 +63,8 @@ void DBFile::Load (Schema &f_schema, char *loadpath) {
 		page_buffer.EmptyItOut();
 		page_buffer.Append(&temp);
 	}
+	file.AddPageToEnd(&page_buffer);
+
 }
 
 int DBFile::Open (char *f_path) {
