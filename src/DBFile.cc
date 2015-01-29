@@ -13,7 +13,7 @@
 // stub file .. replace it with your own DBFile.cc
 
 DBFile::DBFile () {
-
+	page_buffer = Page();
 }
 
 int DBFile::Create (char *f_path, fType f_type, void *startup) {
@@ -24,8 +24,8 @@ int DBFile::Create (char *f_path, fType f_type, void *startup) {
 	// construct path of the header meta-data file
 	char header_path[100];
 	char final_path[100];
-	sprintf (final_path, "%s%s", bin_path, f_path);
-	sprintf (header_path, "%s.header", f_path);
+	sprintf (final_path, "%s%s.b", bin_path, f_path);
+	sprintf (header_path, "%s.header", final_path);
 
 
 	// write meta-data file depending on type of file
@@ -46,15 +46,15 @@ int DBFile::Create (char *f_path, fType f_type, void *startup) {
 }
 
 void DBFile::Load (Schema &f_schema, char *loadpath) {
+	cout<<loadpath;
 
 	FILE *tableFile = fopen (loadpath, "r");
 	Record temp;
-
 	//open file to write records
 
 	File file;
 	char final_path[100];
-	sprintf(final_path, "%s%s", bin_path, f_schema.getSchemaName());
+	sprintf(final_path, "%s%s.b", bin_path, "region");
 	cout<<final_path;
 
 	file.Open(1, final_path);

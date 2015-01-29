@@ -43,6 +43,7 @@ Attribute *Schema :: GetAtts () {
 
 Schema :: Schema (char *fName, char *relName) {
 	this->relName = relName;
+
 	FILE *foo = fopen (fName, "r");
 	
 	// this is enough space to hold any tokens
