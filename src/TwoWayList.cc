@@ -247,7 +247,7 @@ TwoWayList <Type> :: Insert (Type *Item)
 
 }
 
-// get a reference to the currentitemin the list
+// get a reference to the current item in the list
 template <class Type> Type* 
 TwoWayList <Type> ::  Current (int offset)
 {

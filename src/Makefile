@@ -13,8 +13,8 @@ all:main
 test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o test.o
 	$(CC) -o test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o test.o
 	
-main: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o main.o
-	$(CC) -o main Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o main.o 
+main: Record.o Comparison.o ComparisonEngine.o Schema.o TwoWayList.o File.o DBFile.o y.tab.o lex.yy.o main.o
+	$(CC) -o main Record.o Comparison.o ComparisonEngine.o Schema.o TwoWayList.o File.o DBFile.o y.tab.o lex.yy.o main.o 
 	
 test.o: test.cc
 	$(CC) -g -c test.cc
@@ -27,7 +27,10 @@ Comparison.o: Comparison.cc
 	
 ComparisonEngine.o: ComparisonEngine.cc
 	$(CC) -g -c ComparisonEngine.cc
-	
+
+TwoWayList.o: TwoWayList.cc
+	$(CC) -g -c TwoWayList.cc
+
 DBFile.o: DBFile.cc
 	$(CC) -g -c DBFile.cc
 

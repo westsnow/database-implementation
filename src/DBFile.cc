@@ -1,4 +1,5 @@
 #include <iostream>
+#include "TwoWayList.cc"
 #include "include/TwoWayList.h"
 #include "include/Record.h"
 #include "include/Schema.h"
@@ -7,12 +8,18 @@
 #include "include/ComparisonEngine.h"
 #include "include/DBFile.h"
 #include "include/Defs.h"
-#include <string.h>
 #include <fstream>
 
 // stub file .. replace it with your own DBFile.cc
 
 DBFile::DBFile () {
+	opened_file = new File();
+	curr_page = new Page();
+	page_number = 1;
+}
+
+DBFile::~DBFile () {
+
 }
 
 int DBFile::Create (char *f_path, fType f_type, void *startup) {
@@ -39,7 +46,7 @@ int DBFile::Create (char *f_path, fType f_type, void *startup) {
 	// header_file.close();
 
 	file.Open(0,final_path);
-
+	file.Close();
 
 	return 1;
 }
@@ -59,7 +66,8 @@ void DBFile::Load (Schema &f_schema, char *loadpath) {
 	sprintf(final_path, "%s%s.b", bin_path, f_schema.getSchemaName());
 	cout<<"path of db file : "<<final_path<<endl;
 
-	file.Open(0, final_path);
+	//Open should be 1 for open without delete?
+	file.Open(1, final_path);
 
 	//empty buffer before using
 	page_buffer.EmptyItOut();
@@ -77,27 +85,46 @@ void DBFile::Load (Schema &f_schema, char *loadpath) {
 		}
 	}
 	file.AddPageToEnd(&page_buffer);
+	page_buffer.EmptyItOut();
 	cout<<"file has "<<file.GetLength()<<" pages"<<endl;
 	file.Close();
 
 }
 
 int DBFile::Open (char *f_path) {
-	File file = File();
-	file.Open(1, f_path);
-	cout<<"there are "<<file.GetLength()<<" pages int the file"<<endl;  
+	opened_file->Open(1, f_path);
+	cout<<"there are "<<opened_file->GetLength()<<" pages in the file"<<endl;
+	return 1;
 }
 
 void DBFile::MoveFirst () {
+	page_number = 0;
+	if(curr_page->numRecs > 0) curr_page->EmptyItOut();
+	opened_file->GetPage(curr_page, page_number);
 }
 
 int DBFile::Close () {
+	cout<<"Closing DBFile";
+	opened_file->Close();
+	return 1;
 }
 
 void DBFile::Add (Record &rec) {
 }
 
 int DBFile::GetNext (Record &fetchme) {
+	if(curr_page->numRecs > 0) {
+		curr_page->GetFirst(&fetchme);
+	}
+	else{
+		page_number++;
+		if(opened_file->GetLength()>page_number){
+			opened_file->GetPage(curr_page, page_number);
+			curr_page->GetFirst(&fetchme);
+		}
+		else return 0;
+	}
+	return 1;
 }
 
 int DBFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {

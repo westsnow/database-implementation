@@ -13,11 +13,14 @@ typedef enum {heap, sorted, tree} fType;
 // stub DBFile header..replace it with your own DBFile.h 
 
 class DBFile {
+	File *opened_file;
+	Page *curr_page;
+	int page_number;
 	char *bin_path = "../binary_data/";
 
 public:
 	DBFile (); 
-
+	~DBFile();
 	int Create (char *fpath, fType file_type, void *startup);
 	int Open (char *fpath);
 	int Close ();
