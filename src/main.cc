@@ -41,13 +41,24 @@ int main () {
 	cout<<"moving first"<<endl;
 	dbfile.MoveFirst();
 	Record r = Record();
-	dbfile.GetNext(r);
-	r.Print(new Schema ("catalog", "nation"));
-	dbfile.GetNext(r);
-	r.Print(new Schema ("catalog", "nation"));
+	
+	cout<<"cur page number: "<<dbfile.getCurPageNumber()<<endl;
 
-	dbfile.GetNext(r);
-	r.Print(new Schema ("catalog", "nation"));
+	for(int i = 0; i < 12; ++i){
+		dbfile.GetNext(r);
+		r.Print(new Schema ("catalog", "nation"));
+		cout<<"cur page number: "<<dbfile.getCurPageNumber()<<endl;
+	}
+
+	dbfile.MoveFirst();
+
+	cout<<"cur page number: "<<dbfile.getCurPageNumber()<<endl;
+
+	for(int i = 0; i < 12; ++i){
+		dbfile.GetNext(r);
+		r.Print(new Schema ("catalog", "nation"));
+		cout<<"cur page number: "<<dbfile.getCurPageNumber()<<endl;
+	}
 
 	dbfile.Close();
 }

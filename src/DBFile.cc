@@ -22,6 +22,10 @@ DBFile::~DBFile () {
 
 }
 
+int DBFile::getCurPageNumber(){
+	return page_number;
+}
+
 
 int  DBFile::Create (char *f_path, fType f_type, void *startup) {
 
@@ -79,6 +83,7 @@ int DBFile::Load (Schema &f_schema, char *loadpath) {
 		else{
 			opened_file->AddPageToEnd(&page_buffer);
 			page_buffer.EmptyItOut();
+			page_buffer.Append(&tmp);
 			cout<<"file's length is " << opened_file->GetLength()<<endl;
 		}
 	}
@@ -110,14 +115,14 @@ int DBFile::Close () {
 int DBFile::Add (Record &rec) {
 	
 	Page oPage = Page();
-	opened_file->GetPage(oPage, opened_file.GetLength() - 1);
+	opened_file->GetPage(&oPage, opened_file->GetLength() - 1);
 	//if the last page is full
-	if( !opage.Append(rec) ){
+	if( !oPage.Append(&rec) ){
 		Page newPage = Page();
-		newPage.Append(rec);
+		newPage.Append(&rec);
 		opened_file->AddPageToEnd(&newPage);
 	}else{
-		opened_file->AddPage(oPage, opened_file.GetLength() - 2);
+		opened_file->AddPage(&oPage, opened_file->GetLength() - 2);
 	}
 	return 1;
 }
