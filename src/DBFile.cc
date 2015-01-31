@@ -107,7 +107,19 @@ int DBFile::Close () {
 	return 1;
 }
 
-void DBFile::Add (Record &rec) {
+int DBFile::Add (Record &rec) {
+	
+	Page oPage = Page();
+	opened_file->GetPage(oPage, opened_file.GetLength() - 1);
+	//if the last page is full
+	if( !opage.Append(rec) ){
+		Page newPage = Page();
+		newPage.Append(rec);
+		opened_file->AddPageToEnd(&newPage);
+	}else{
+		opened_file->AddPage(oPage, opened_file.GetLength() - 2);
+	}
+	return 1;
 }
 
 int DBFile::GetNext (Record &fetchme) {

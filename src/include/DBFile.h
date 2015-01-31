@@ -41,7 +41,7 @@ public:
 	int Load (Schema &myschema, char *loadpath);
 
 	void MoveFirst ();
-	void Add (Record &addme);
+	int Add (Record &addme);
 	int GetNext (Record &fetchme);
 	int GetNext (Record &fetchme, CNF &cnf, Record &literal);
 
