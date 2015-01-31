@@ -157,6 +157,7 @@ void Page :: FromBinary (char *bits) {
 }
 
 File :: File () {
+	myFilDes = -1;
 }
 
 File :: ~File () {

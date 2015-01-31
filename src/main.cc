@@ -14,7 +14,7 @@ extern struct AndList *final;
 int main () {
 
 //	 char *dbfile_dir = "region";
-//	 DBFile dbfile = DBFile();
+	 DBFile dbfile = DBFile();
 //	 cout << "DBFile will be created at " << dbfile_dir << endl;
 //	 dbfile.Create (dbfile_dir, heap, NULL);
 //
@@ -24,26 +24,32 @@ int main () {
 //	 dbfile.Load(*(new Schema ("catalog", "region")), tbl_path);
 //	 dbfile.Close ();
 
-	char *fileLocation = "../binary_data/region2.b";
-	DBFile dbfile = DBFile();
-	if(dbfile.FileExists(fileLocation)){
-		cout<<"file already exists"<<endl;
-	}else{
-		dbfile.Create(fileLocation, heap, NULL);
-    }
+	// char *fileLocation = "../binary_data/region.b";
+	// DBFile dbfile = DBFile();
+	// if(dbfile.FileExists(fileLocation)){
+	// 	cout<<"file already exists"<<endl;
+	// }else{
+	// 	dbfile.Create(fileLocation, heap, NULL);
+ //    }
 
-    dbfile.Load(*(new Schema ("catalog", "region")),  "../debug_data/small/region.tbl" ,fileLocation);
+ //    dbfile.Load(*(new Schema ("catalog", "region")),  "../debug_data/small/region.tbl" ,fileLocation);
 
+	dbfile.Create("../binary_data/nation.b", heap, NULL);
+	dbfile.Open("../binary_data/nation.b");
 
-	// dbfile.Open("../binary_data/region.b");
-	// cout<<"moving first"<<endl;
-	// dbfile.MoveFirst();
-	// Record r = Record();
-	// dbfile.GetNext(r);
-	// r.Print(new Schema ("catalog", "region"));
-	// dbfile.GetNext(r);
-	// r.Print(new Schema ("catalog", "region"));
-	// dbfile.Close();
+	dbfile.Load(*(new Schema ("catalog", "nation")),  "../debug_data/small/nation.tbl");
+	cout<<"moving first"<<endl;
+	dbfile.MoveFirst();
+	Record r = Record();
+	dbfile.GetNext(r);
+	r.Print(new Schema ("catalog", "nation"));
+	dbfile.GetNext(r);
+	r.Print(new Schema ("catalog", "nation"));
+
+	dbfile.GetNext(r);
+	r.Print(new Schema ("catalog", "nation"));
+
+	dbfile.Close();
 }
 
 

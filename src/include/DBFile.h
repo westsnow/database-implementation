@@ -38,8 +38,7 @@ public:
     	}   
 	}
 
-    // seperate function, don't need call open() or close().
-	void Load (Schema &myschema, char *loadpath, char *f_path);
+	int Load (Schema &myschema, char *loadpath);
 
 	void MoveFirst ();
 	void Add (Record &addme);

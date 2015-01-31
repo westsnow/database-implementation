@@ -15,7 +15,7 @@
 DBFile::DBFile () {
 	opened_file = new File();
 	curr_page = new Page();
-	page_number = 1;
+	page_number = 0;
 }
 
 DBFile::~DBFile () {
@@ -23,7 +23,7 @@ DBFile::~DBFile () {
 }
 
 
-int DBFile::Create (char *f_path, fType f_type, void *startup) {
+int  DBFile::Create (char *f_path, fType f_type, void *startup) {
 
 	File file;
 	// ofstream header_file;
@@ -52,7 +52,12 @@ int DBFile::Create (char *f_path, fType f_type, void *startup) {
 	return 1;
 }
 
-void DBFile::Load (Schema &f_schema, char *loadpath, char* dbFilePath) {
+
+int DBFile::Load (Schema &f_schema, char *loadpath) {
+
+	if( !opened_file->isOpen())
+		return 0;
+
 
 	Page page_buffer = Page();
 
@@ -62,9 +67,7 @@ void DBFile::Load (Schema &f_schema, char *loadpath, char* dbFilePath) {
 	Record tmp;
 	//open file to write records
 
-	File file;
 
-	file.Open(1, dbFilePath);
 
 
 
@@ -74,15 +77,15 @@ void DBFile::Load (Schema &f_schema, char *loadpath, char* dbFilePath) {
 				cout<<"the page's numRecs is "<<page_buffer.numRecs<<" and curSizeInBytes is " << page_buffer.curSizeInBytes<<endl;
 		}
 		else{
-			file.AddPageToEnd(&page_buffer);
+			opened_file->AddPageToEnd(&page_buffer);
 			page_buffer.EmptyItOut();
-			cout<<"file's length is " << file.GetLength()<<endl;
+			cout<<"file's length is " << opened_file->GetLength()<<endl;
 		}
 	}
-	file.AddPageToEnd(&page_buffer);
+	opened_file -> AddPageToEnd(&page_buffer);
 	page_buffer.EmptyItOut();
-	cout<<"file has "<<file.GetLength()<<" pages"<<endl;
-	file.Close();
+	cout<<"file has "<<opened_file->GetLength()<<" pages"<<endl;
+	return 1;
 
 }
 

@@ -56,6 +56,10 @@ public:
 	File ();
 	~File ();
 
+	bool isOpen(){
+		return myFilDes != -1;
+	}
+
 	// returns the current length of the file, in pages
 	off_t GetLength ();
 
