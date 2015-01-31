@@ -115,7 +115,9 @@ int DBFile::Close () {
 int DBFile::Add (Record &rec) {
 	
 	Page oPage = Page();
+
 	opened_file->GetPage(&oPage, opened_file->GetLength() - 2);
+
 	//if the last page is full
 	if( !oPage.Append(&rec) ){
 		Page newPage = Page();
