@@ -43,22 +43,31 @@ int main () {
 	Record r = Record();
 	
 	cout<<"cur page number: "<<dbfile.getCurPageNumber()<<endl;
+	dbfile.GetNext(r);
+			r.Print(new Schema ("catalog", "nation"));
 
-	for(int i = 0; i < 12; ++i){
-		dbfile.GetNext(r);
-		r.Print(new Schema ("catalog", "nation"));
-		cout<<"cur page number: "<<dbfile.getCurPageNumber()<<endl;
-	}
+	
+	dbfile.Add(r);
+
+
+
 
 	dbfile.MoveFirst();
 
-	cout<<"cur page number: "<<dbfile.getCurPageNumber()<<endl;
 
-	for(int i = 0; i < 12; ++i){
-		dbfile.GetNext(r);
-		r.Print(new Schema ("catalog", "nation"));
-		cout<<"cur page number: "<<dbfile.getCurPageNumber()<<endl;
+	for(int i = 0; i < 100; ++i){
+		if(dbfile.GetNext(r)){
+			r.Print(new Schema ("catalog", "nation"));
+			cout<<"cur page number: "<<dbfile.getCurPageNumber()<<endl;
+		}else{
+			cout<<"end of file"<<endl;
+			break;
+		}
 	}
+
+
+
+	
 
 	dbfile.Close();
 }

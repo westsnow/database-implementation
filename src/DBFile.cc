@@ -115,13 +115,14 @@ int DBFile::Close () {
 int DBFile::Add (Record &rec) {
 	
 	Page oPage = Page();
-	opened_file->GetPage(&oPage, opened_file->GetLength() - 1);
+	opened_file->GetPage(&oPage, opened_file->GetLength() - 2);
 	//if the last page is full
 	if( !oPage.Append(&rec) ){
 		Page newPage = Page();
 		newPage.Append(&rec);
 		opened_file->AddPageToEnd(&newPage);
 	}else{
+		cout<<"here"<<endl;
 		opened_file->AddPage(&oPage, opened_file->GetLength() - 2);
 	}
 	return 1;
@@ -133,7 +134,7 @@ int DBFile::GetNext (Record &fetchme) {
 	}
 	else{
 		page_number++;
-		if(opened_file->GetLength()>page_number){
+		if(opened_file->GetLength()> (page_number + 1) ){
 			opened_file->GetPage(curr_page, page_number);
 			curr_page->GetFirst(&fetchme);
 		}
