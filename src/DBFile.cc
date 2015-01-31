@@ -22,6 +22,7 @@ DBFile::~DBFile () {
 
 }
 
+
 int DBFile::Create (char *f_path, fType f_type, void *startup) {
 
 	File file;
@@ -29,8 +30,8 @@ int DBFile::Create (char *f_path, fType f_type, void *startup) {
 
 	// construct path of the header meta-data file
 	// char header_path[100];
-	char final_path[100];
-	sprintf (final_path, "%s%s.b", bin_path, f_path);
+	// char final_path[100];
+	// sprintf (final_path, "%s%s.b", bin_path, f_path);
 	// sprintf (header_path, "%s.header", final_path);
 
 
@@ -45,13 +46,13 @@ int DBFile::Create (char *f_path, fType f_type, void *startup) {
 
 	// header_file.close();
 
-	file.Open(0,final_path);
+	file.Open(0,f_path);
 	file.Close();
 
 	return 1;
 }
 
-void DBFile::Load (Schema &f_schema, char *loadpath) {
+void DBFile::Load (Schema &f_schema, char *loadpath, char* dbFilePath) {
 
 	Page page_buffer = Page();
 
@@ -62,15 +63,9 @@ void DBFile::Load (Schema &f_schema, char *loadpath) {
 	//open file to write records
 
 	File file;
-	char final_path[100];
-	sprintf(final_path, "%s%s.b", bin_path, f_schema.getSchemaName());
-	cout<<"path of db file : "<<final_path<<endl;
 
-	//Open should be 1 for open without delete?
-	file.Open(1, final_path);
+	file.Open(1, dbFilePath);
 
-	//empty buffer before using
-	page_buffer.EmptyItOut();
 
 
    	while(tmp.SuckNextRecord(&f_schema, tableFile) ){

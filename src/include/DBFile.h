@@ -1,6 +1,7 @@
 #ifndef DBFILE_H
 #define DBFILE_H
 
+#include <fstream>
 #include "TwoWayList.h"
 #include "Record.h"
 #include "Schema.h"
@@ -25,7 +26,20 @@ public:
 	int Open (char *fpath);
 	int Close ();
 
-	void Load (Schema &myschema, char *loadpath);
+	//it's always a good iead to check if file exists before other operations.
+	inline bool FileExists (const char* name) {
+    	ifstream f(name);
+    	if (f.good()) {
+        	f.close();
+        	return true;
+    	} else {
+        	f.close();
+        	return false;
+    	}   
+	}
+
+    // seperate function, don't need call open() or close().
+	void Load (Schema &myschema, char *loadpath, char *f_path);
 
 	void MoveFirst ();
 	void Add (Record &addme);
