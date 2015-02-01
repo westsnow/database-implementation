@@ -71,10 +71,6 @@ int DBFile::Load (Schema &f_schema, char *loadpath) {
 	Record tmp;
 	//open file to write records
 
-
-
-
-
    	while(tmp.SuckNextRecord(&f_schema, tableFile) ){
 		//tmp.Print(&lineitem);
 		if(page_buffer.Append(&tmp)){
@@ -146,4 +142,16 @@ int DBFile::GetNext (Record &fetchme) {
 }
 
 int DBFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
+	ComparisonEngine comp;
+
+	GetNext(fetchme);
+
+	while(!comp.Compare(&fetchme, &literal, &cnf)){
+		if (GetNext(fetchme) == 0 ){
+			return 0;
+		}
+	}
+
+	return 1;
+
 }

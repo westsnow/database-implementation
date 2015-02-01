@@ -5,9 +5,9 @@
 #include "include/DBFile.h"
 using namespace std;
 
-/*extern "C" {
+extern "C" {
 	int yyparse(void);   // defined in y.tab.c
-}*/
+}
 
 extern struct AndList *final;
 
@@ -39,24 +39,32 @@ int main () {
 
 	dbfile.Load(*(new Schema ("catalog", "nation")),  "../debug_data/small/nation.tbl");
 	cout<<"moving first"<<endl;
-	dbfile.MoveFirst();
+	
+//	dbfile.MoveFirst();
 	Record r = Record();
-	
-	cout<<"cur page number: "<<dbfile.getCurPageNumber()<<endl;
-	dbfile.GetNext(r);
-			r.Print(new Schema ("catalog", "nation"));
+//
+//	cout<<"cur page number: "<<dbfile.getCurPageNumber()<<endl;
+//	dbfile.GetNext(r);
+//			r.Print(new Schema ("catalog", "nation"));
 
 	
-	dbfile.Add(r);
-
-
-
+//	dbfile.Add(r);
 
 	dbfile.MoveFirst();
+
+	CNF cnf;
+	Record literal;
+
+	cout << " Enter CNF predicate (when done press ctrl-D):\n\t";
+	if (yyparse() != 0) {
+		std::cout << "Can't parse your CNF.\n";
+		exit (1);
+	}
+	cnf.GrowFromParseTree (final, new Schema ("catalog", "nation"), literal);
 
 
 	for(int i = 0; i < 100; ++i){
-		if(dbfile.GetNext(r)){
+		if(dbfile.GetNext(r, cnf, literal)){
 			r.Print(new Schema ("catalog", "nation"));
 			cout<<"cur page number: "<<dbfile.getCurPageNumber()<<endl;
 		}else{
