@@ -4,6 +4,13 @@ GoogleTestDir = ./GTestLib
 
 tag = -i
 llflag = -ll
+
+ifdef linux
+tag = -n
+llflag = -lfl
+endif
+
+
 gtestlib = ./lib
 
 BIN = ./bin/
@@ -18,10 +25,10 @@ LIST = Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o
 OBJ_FILES = $(addprefix $(BIN), $(LIST))
 
 
-all: test main gtest
+all: test
 
 gtest: $(OBJ_FILES) $(GOBJ_FILES) $(BIN)gtest.o 
-	$(CC) -o $(BIN)$@ $(OBJ_FILES) $(GOBJ_FILES) $(BIN)Gtest.o -I$(GoogleTestDir)/include -L$(GoogleTestDir)/lib -lgtest -lpthread
+	$(CC) -o $(BIN)$@ $(OBJ_FILES) $(GOBJ_FILES) $(BIN)gtest.o -I$(GoogleTestDir)/include -L$(GoogleTestDir)/lib -lgtest -lpthread
 
 test: $(OBJ_FILES) $(BIN)test.o
 	$(CC) -o $(BIN)$@ $(OBJ_FILES) ./bin/test.o $(llflag)
@@ -29,8 +36,6 @@ test: $(OBJ_FILES) $(BIN)test.o
 main: $(OBJ_FILES) $(BIN)main.o
 	$(CC) -o $(BIN)$@ $(OBJ_FILES) ./bin/main.o $(llflag)
 
-googletest: $(OBJ_FILES) $(BIN)unittest.o
-	$(CC) ./gtest/gtest-all.cc -o $(BIN)$@ $(OBJ_FILES) ./bin/unittest.o $(llflag) -I $(gtestlib) -lpthread
 
 bin/%.o: $(SRC)%.cc
 	$(CC) -c -g $< -o $@
