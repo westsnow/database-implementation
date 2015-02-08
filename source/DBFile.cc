@@ -28,7 +28,9 @@ int DBFile::getCurPageNumber(){
 	return page_number;
 }
 
-
+int DBFile::getPageNumber(){
+	return opened_file->GetLength();
+}
 int  DBFile::Create (char *f_path, fType f_type, void *startup) {
 
 	File file;
