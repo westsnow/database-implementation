@@ -21,7 +21,7 @@ GSRC = ./gtest/
 GLIST = GtestLoad.o
 GOBJ_FILES = $(addprefix $(BIN), $(GLIST))
 
-LIST = Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o
+LIST = Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o Pipe.o BigQ.o
 OBJ_FILES = $(addprefix $(BIN), $(LIST))
 
 
