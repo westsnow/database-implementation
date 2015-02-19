@@ -10,10 +10,14 @@
 using namespace std;
 
 // make sure that the information below is correct
+char *dbfile_dir = "/Users/westsnow/Documents/DBIDATA/output/"; // dir where binary heap files should be stored
+char *tpch_dir ="/Users/westsnow/Documents/DBIDATA/input/"; // dir where dbgen tpch files (extension *.tbl) can be found
+char *catalog_path = "/Users/westsnow/GitHub/dbi/source/catalog"; // full path of the catalog file
 
-char *catalog_path = "catalog"; 
-char *tpch_dir ="/cise/tmp/dbi_sp11/DATA/10M/"; // dir where dbgen tpch files (extension *.tbl) can be found
-char *dbfile_dir = ""; 
+
+// char *catalog_path = "catalog"; 
+// char *tpch_dir ="/cise/tmp/dbi_sp11/DATA/10M/"; // dir where dbgen tpch files (extension *.tbl) can be found
+// char *dbfile_dir = ""; 
 
 
 extern "C" {

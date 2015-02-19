@@ -14,6 +14,12 @@ public:
 
 	BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen);
 	~BigQ ();
+
+private:
+	// void* consumeInnerPipe (void *arg);
+
+	int buffsz; // pipe cache size
+
 };
 
 #endif

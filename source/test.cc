@@ -46,8 +46,8 @@ void *consumer (void *arg) {
 	int i = 0;
 
 	Record rec[2];
-	Record *last = NULL, *prev = NULL;
-
+	Record *last = NULL, *prev = NULL; 
+	
 	while (t->pipe->Remove (&rec[i%2])) {
 		prev = last;
 		last = &rec[i%2];

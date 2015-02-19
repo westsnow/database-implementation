@@ -28,6 +28,9 @@ Page :: ~Page () {
 	delete myRecs;
 }
 
+int Page :: isEmpty(){
+	return numRecs == 0;
+} 
 void Page :: EmptyItOut () {
 
 	// get rid of all of the records
