@@ -28,6 +28,10 @@ Page :: ~Page () {
 	delete myRecs;
 }
 
+
+int Page::getRecNum(){
+	return numRecs;
+}
 int Page :: isEmpty(){
 	return numRecs == 0;
 } 
