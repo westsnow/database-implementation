@@ -2,6 +2,7 @@
 #define BIGQ_H
 #include <pthread.h>
 #include <iostream>
+#include <vector>
 #include "Pipe.h"
 #include "File.h"
 #include "Record.h"
@@ -23,9 +24,12 @@ class BigQ {
 public:
 
 	BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen);
+	void sortVector(std::vector<Record*> &run, OrderMaker &sortorder);
 	~BigQ ();
 
 private:
+	ComparisonEngine 	ceng;
+
 	// void* consumeInnerPipe (void *arg);
 
 	int buffsz; // pipe cache size

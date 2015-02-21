@@ -40,6 +40,7 @@ void *consumer (void *arg) {
 	if (t->write) {
 		sprintf (outfile, "%s.bigq", rel->path ());
 		dbfile.Create (outfile, heap, NULL);
+		dbfile.Open(outfile);
 	}
 
 	int err = 0;
@@ -58,6 +59,7 @@ void *consumer (void *arg) {
 			}
 			if (t->write) {
 				dbfile.Add (*prev);
+				// printf("now the dbfile has %d pages...\n", dbfile.getPageNumber() );
 			}
 		}
 		if (t->print) {

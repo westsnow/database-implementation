@@ -1,7 +1,33 @@
 #include "BigQ.h"
-#include <vector>
 
 using namespace std;
+
+
+void swap(std::vector<Record*> &run, int i, int j){
+	if(i == j)
+		return;
+	Record* tmp = run[i];
+	run[i] = run[j];
+	run[j] = tmp;
+}
+// 3 2 1 5 
+void BigQ::sortVector(std::vector<Record*> &run, OrderMaker &sortorder){
+	if(run.size() < 2)
+		return;
+	// Schema* sch = new Schema ("/Users/westsnow/GitHub/database-implementation/source/catalog", "nation");
+	for(int i = 0; i < run.size(); ++i){
+		for(int j = 0; j < run.size() - i-1; ++j){
+			// printf("now comparing.........................................\n");
+			// run[j]->Print(sch);
+			// run[j+1]->Print(sch);
+			// printf("the result is %d\n", ceng.Compare(run[j], run[j+1], &sortorder));
+			if(ceng.Compare(run[j], run[j+1], &sortorder) == 1){
+				swap(run, j, j+1);
+			}
+		}
+	}
+}
+
 
 
 void* producerRunPipe(void *arg){
@@ -21,7 +47,7 @@ void* producerRunPipe(void *arg){
 		){
 		//Get current page
 		tmpFile.GetPage(&p, (ti->index*ti->runLen)+currPage );
-		Record *r = new Record() ;
+		Record *r = new Record();
 		while(p.GetFirst(r)){
 			//printf("run %d inserting into pipe \n", ti->index);
 
@@ -108,13 +134,14 @@ BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
 	Record tmp;
 	int pageNum = 0;
 	int totalPageNum = 0;
+	// Schema* sch = new Schema ("/Users/westsnow/GitHub/database-implementation/source/catalog", "nation");
 	while(in.Remove(&tmp)){
 		if(!page.Append(&tmp)){
 				Record recRetrive;
 				//current page is full, put it to vector, waiting for sort.
 				// printf("this page has %d records\n", page.getRecNum());
 				while( page.GetFirst(&recRetrive)){
-					//recRetrive.Print( new Schema ("/Users/westsnow/GitHub/database-implementation/source/catalog", "nation")  );
+					// recRetrive.Print( new Schema ("/Users/westsnow/GitHub/database-implementation/source/catalog", "nation")  );
 					// printf("get one rec\n");
 					// printf("run's length is %d\n", run.size());
 					Record *r = new Record();
@@ -128,8 +155,9 @@ BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
 				//printf("page num is now %d\n", pageNum);
 				if(pageNum >= runlen){
 					pageNum = 0;
-					//sort(run);//how
+					sortVector(run, sortorder);
 					for(int i = 0; i < run.size(); ++i){
+						// run[i]->Print(sch);
 						innerPipe.Insert(run[i]);
 					}
 					runSize++;
@@ -146,7 +174,7 @@ BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
 		r->Copy(&recRetrive);
 		run.push_back(r);
 	}
-	//sort(run);
+	sortVector(run, sortorder);
 	if(run.size() > 0){
 		runSize++;
 		totalPageNum++;
@@ -192,7 +220,6 @@ BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
 	initializeHeap(&runBuffers, &heap, runSize, runlen);
 
 
-	ComparisonEngine 	ceng;
 	Record 				*min;
 	int 				minIndex;
 
@@ -202,7 +229,7 @@ BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
 		min = heap[0];
 		minIndex = 0;
 		for(int i=1; i<heap.size(); i++){
-			//printf("comp %d \n",ceng.Compare(min, heap[i], &sortorder));
+			printf("comp %d \n",ceng.Compare(min, heap[i], &sortorder));
 			if(ceng.Compare(min, heap[i], &sortorder) == 1){
 				min = heap[i];
 				minIndex = i;
