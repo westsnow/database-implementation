@@ -96,21 +96,21 @@ void test1 (int option, int runlen) {
 	pthread_t thread1;
 	pthread_create (&thread1, NULL, producer, (void *)&input);
 
-	// thread to read sorted data from output pipe (dumped by BigQ)
-	// pthread_t thread2;
-	// testutil tutil = {&output, &sortorder, false, false};
-	// if (option == 2) {
-	// 	tutil.print = true;
-	// }
-	// else if (option == 3) {
-	// 	tutil.write = true;
-	// }
-	// pthread_create (&thread2, NULL, consumer, (void *)&tutil);
+	//thread to read sorted data from output pipe (dumped by BigQ)
+	 pthread_t thread2;
+	 testutil tutil = {&output, &sortorder, false, false};
+	 if (option == 2) {
+	 	tutil.print = true;
+	 }
+	 else if (option == 3) {
+	 	tutil.write = true;
+	 }
+	 pthread_create (&thread2, NULL, consumer, (void *)&tutil);
 
 	BigQ bq (input, output, sortorder, runlen);
 
 	pthread_join (thread1, NULL);
-	//pthread_join (thread2, NULL);
+	pthread_join (thread2, NULL);
 }
 
 int main (int argc, char *argv[]) {

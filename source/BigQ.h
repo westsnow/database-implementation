@@ -6,7 +6,17 @@
 #include "File.h"
 #include "Record.h"
 
+
+
+struct thread_info {    /* Used as argument to thread_start() */
+   Pipe *runBuffer;
+   int runLen;
+   int index;
+};
+
 using namespace std;
+
+
 
 class BigQ {
 

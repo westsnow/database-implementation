@@ -3,6 +3,72 @@
 
 using namespace std;
 
+
+void* producerRunPipe(void *arg){
+	thread_info *ti = (thread_info *) arg;
+
+	File tmpFile;
+	tmpFile.Open(1, "./generatedRuns.tmp");
+
+	int currPage = 0;
+
+	//number pages in file, used in case I hit the last page
+	int fileSize = tmpFile.GetLength();
+	Page p = Page();
+	//While there are pages left to produce on this run
+	while(  (ti->index*ti->runLen)+currPage <  (ti->index+1)*ti->runLen &&
+			(ti->index*ti->runLen)+currPage <  fileSize -1
+		){
+		//Get current page
+		tmpFile.GetPage(&p, (ti->index*ti->runLen)+currPage );
+		Record *r = new Record() ;
+		while(p.GetFirst(r)){
+			//printf("run %d inserting into pipe \n", ti->index);
+
+			ti->runBuffer->Insert(r);
+		}
+
+		currPage++;
+	}
+	tmpFile.Close();
+
+	//printf("shutting down buffer");
+	ti->runBuffer->ShutDown();
+}
+
+void initializeHeap(std::vector<Pipe*> *runBuffers, std::vector<Record*> *heap,int numRuns, int runLength){
+	printf("initializing \n");
+
+	for (int i=0;i<numRuns;i++){
+		int buffsz = 16;
+		printf("Initializing pipe %d, with buffer_size %d \n", i,buffsz);
+		Pipe *runPipe = new Pipe(buffsz);
+
+		printf("Initializing Producer Thread \n");
+		pthread_t runThread;
+
+		thread_info *ti = new thread_info();
+		ti->runBuffer = runPipe;
+		ti->runLen = runLength;
+		ti->index = i;
+
+		pthread_create (&runThread, NULL, producerRunPipe, (void *)ti);
+
+		printf("Storing pipe pointer \n");
+
+		runBuffers->push_back( runPipe) ;
+
+		//Check here if segfault
+		Record *r = new Record;
+		runPipe->Remove(r);
+		heap->push_back(r);
+
+	}
+
+}
+
+
+
 void* consumeInnerPipe (void *arg) {
 	
 	Pipe *pipe = (Pipe *) arg;
@@ -22,8 +88,11 @@ void* consumeInnerPipe (void *arg) {
 	}
 	if( !page.isEmpty())
 		tmpFile.AddPageToEnd(&page);
+	//printf("Pages in file: %d", tmpFile.GetLength());
 	tmpFile.Close();
 }
+
+
 
 BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
 	printf("big q working...\n");
@@ -91,7 +160,7 @@ BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
     printf("%d runs has been generated, there are %d total pages\n", runSize, totalPageNum);
 
 
-
+    /*
     //try to read a page from generated file
     File myfile;
     myfile.Open(1, "./generatedRuns.tmp");
@@ -100,16 +169,69 @@ BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
     myfile.GetPage(&p, totalPageNum-1);
     Record recP;
     while( p.GetFirst(&recP)){
-		recP.Print( new Schema ("/Users/westsnow/GitHub/database-implementation/source/catalog", "part")  );
+		recP.Print( new Schema ("/Users/Migue/Documents/workspace/database-implementation/source/catalog", "part")  );
+	}*/
+
+
+	printf("done... phase one\n");
+
+
+
+	/*
+		PHASE TWO -  MERGE RUNS
+	*/
+
+	printf("start... phase two\n");
+	std::vector<Record*>	heap;
+	std::vector<Pipe*> 		runBuffers;
+
+
+	//Initialize one pipe per run, and creates a producer for each pipe
+	//Each producer will extract rows from its run in the file and feed the pipe
+	//Heap is initialized with first row of each run (consume from its runBuffer[i])
+	initializeHeap(&runBuffers, &heap, runSize, runlen);
+
+
+	ComparisonEngine 	ceng;
+	Record 				*min;
+	int 				minIndex;
+
+	int 				cont = 0;
+	while(heap.size()>0){ //While there is something to extract
+
+		min = heap[0];
+		minIndex = 0;
+		for(int i=1; i<heap.size(); i++){
+			//printf("comp %d \n",ceng.Compare(min, heap[i], &sortorder));
+			if(ceng.Compare(min, heap[i], &sortorder) == 1){
+				min = heap[i];
+				minIndex = i;
+			}
+		}
+
+		cont++;
+		out.Insert(min);
+		//printf("output min %d \n", cont);
+
+		if(runBuffers[minIndex]->Remove( heap[minIndex] ) == 0){
+			printf("Consumed Run \n");
+			runBuffers.erase(runBuffers.begin()+minIndex);
+			heap.erase(heap.begin()+minIndex);
+
+		}
+
+
+
+
+
+
 	}
-	printf("done...\n");
 
-    // construct priority queue over sorted runs and dump sorted data 
- 	// into the out pipe
 
-    // finally shut down the out pipe
+	printf("phase two finished \n");
 
 	out.ShutDown ();
+
 }
 
 
