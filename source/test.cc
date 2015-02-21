@@ -73,7 +73,7 @@ void *consumer (void *arg) {
 			dbfile.Add (*last);
 		}
 		cerr << " consumer: recs removed written out as heap DBFile at " << outfile << endl;
-		dbfile.Close ();
+		dbfile.Close();
 	}
 	cerr << " consumer: " << (i - err) << " recs out of " << i << " recs in sorted order \n";
 	if (err) {

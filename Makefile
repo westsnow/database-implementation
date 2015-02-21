@@ -31,7 +31,7 @@ gtest: $(OBJ_FILES) $(GOBJ_FILES) $(BIN)gtest.o
 	$(CC) -o $(BIN)$@ $(OBJ_FILES) $(GOBJ_FILES) $(BIN)gtest.o -I$(GoogleTestDir)/include -L$(GoogleTestDir)/lib -lgtest -lpthread
 
 test: $(OBJ_FILES) $(BIN)test.o
-	$(CC) -o $(BIN)$@ $(OBJ_FILES) ./bin/test.o $(llflag)
+	$(CC) -o $(BIN)$@ $(OBJ_FILES) ./bin/test.o $(llflag) -lpthread
 
 main: $(OBJ_FILES) $(BIN)main.o
 	$(CC) -o $(BIN)$@ $(OBJ_FILES) ./bin/main.o $(llflag)

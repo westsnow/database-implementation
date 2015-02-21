@@ -56,7 +56,7 @@ int  DBFile::Create (char *f_path, fType f_type, void *startup) {
 
 	file.Open(0,f_path);
 	file.Close();
-
+	opened_file->Open(1, f_path);
 	return 1;
 }
 
@@ -110,7 +110,7 @@ int DBFile::Close () {
 }
 
 int DBFile::Add (Record &rec) {
-	
+	//rec.Print( new Schema ("/Users/Migue/Documents/workspace/database-implementation/source/catalog", "part")  );
 	Page oPage = Page();
 
 	opened_file->GetPage(&oPage, opened_file->GetLength() - 2);
