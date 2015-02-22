@@ -2,6 +2,8 @@
 
 using namespace std;
 
+std::vector<int> recordCount;
+std::vector<int> pageCount;
 
 void swap(std::vector<Record*> &run, int i, int j){
 	if(i == j)
@@ -67,10 +69,10 @@ void initializeHeap(std::vector<Pipe*> *runBuffers, std::vector<Record*> *heap,i
 
 	for (int i=0;i<numRuns;i++){
 		int buffsz = 16;
-		printf("Initializing pipe %d, with buffer_size %d \n", i,buffsz);
+		//printf("Initializing pipe %d, with buffer_size %d \n", i,buffsz);
 		Pipe *runPipe = new Pipe(buffsz);
 
-		printf("Initializing Producer Thread \n");
+		// printf("Initializing Producer Thread \n");
 		pthread_t runThread;
 
 		thread_info *ti = new thread_info();
@@ -80,7 +82,7 @@ void initializeHeap(std::vector<Pipe*> *runBuffers, std::vector<Record*> *heap,i
 
 		pthread_create (&runThread, NULL, producerRunPipe, (void *)ti);
 
-		printf("Storing pipe pointer \n");
+		// printf("Storing pipe pointer \n");
 
 		runBuffers->push_back( runPipe) ;
 
@@ -103,13 +105,38 @@ void* consumeInnerPipe (void *arg) {
 	Page page;
 	tmpFile.Open(0, "./generatedRuns.tmp");
 
+	//record how many pages each run has.
+ 	pageCount.clear();
+ 	pageCount.resize(recordCount.size());
+ 	//record how many records have been added to the current run
+ 	int recordNum = 0;
+  	//record how many pages have been added to the current run
+ 	int pageNum = 1;
+
+ 	int runNum = 0;
+
+
     while(pipe->Remove(&tmp)){
-    	//printf("sucked a record from inner pipe\n");
-		//tmp.Print(new Schema ("/Users/westsnow/GitHub/database-implementation/source/catalog", "nation"));
+  //   	printf("sucked a record from inner pipe\n");
+		// tmp.Print(new Schema ("/Users/westsnow/GitHub/database-implementation/source/catalog", "nation"));
 		if(!page.Append(&tmp)){
+			//tmp.Print(new Schema ("/Users/westsnow/GitHub/database-implementation/source/catalog", "nation"));
+			pageNum++;
 			tmpFile.AddPageToEnd(&page);
 			page.EmptyItOut();
 			page.Append(&tmp);
+			recordNum++;
+		}else{
+			recordNum++;
+		}
+		if(recordNum == recordCount[runNum]){
+			if( !page.isEmpty() ){
+				//pageNum++;
+				tmpFile.AddPageToEnd(&page);
+				page.EmptyItOut();
+			}
+			pageCount[runNum++] = pageNum;
+			pageNum = 1;
 		}
 	}
 	if( !page.isEmpty())
@@ -130,13 +157,15 @@ BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
 	pthread_create (&thread1, NULL, consumeInnerPipe, (void *)&innerPipe);
 
 	std::vector<Record*> run;
+	recordCount.clear();
 	Page page;
 	Record tmp;
 	int pageNum = 0;
 	int totalPageNum = 0;
-	// Schema* sch = new Schema ("/Users/westsnow/GitHub/database-implementation/source/catalog", "nation");
+// Schema* sch = new Schema ("/Users/westsnow/GitHub/database-implementation/source/catalog", "nation");
 	while(in.Remove(&tmp)){
 		if(!page.Append(&tmp)){
+				// tmp.Print(sch);
 				Record recRetrive;
 				//current page is full, put it to vector, waiting for sort.
 				// printf("this page has %d records\n", page.getRecNum());
@@ -156,9 +185,12 @@ BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
 				if(pageNum >= runlen){
 					pageNum = 0;
 					sortVector(run, sortorder);
+					recordCount.push_back((int)run.size());
+					printf("vector's size is %d now\n", run.size());
 					for(int i = 0; i < run.size(); ++i){
 						// run[i]->Print(sch);
 						innerPipe.Insert(run[i]);
+						// vec[1] = run.size();
 					}
 					runSize++;
 					run.clear();
@@ -176,6 +208,7 @@ BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
 	}
 	sortVector(run, sortorder);
 	if(run.size() > 0){
+		recordCount.push_back((int)run.size());
 		runSize++;
 		totalPageNum++;
 	}
@@ -185,7 +218,7 @@ BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
 	innerPipe.ShutDown();
     pthread_join (thread1, NULL);
 
-    printf("%d runs has been generated, there are %d total pages\n", runSize, totalPageNum);
+    printf("%d runs has been generated, %d runs?... there are %d total pages\n", runSize, recordCount.size(), totalPageNum);
 
 
     /*
@@ -201,7 +234,7 @@ BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
 	}*/
 
 
-	printf("done... phase one\n");
+	printf("done... phase one there are %d runs\n", runSize);
 
 
 
@@ -229,7 +262,7 @@ BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
 		min = heap[0];
 		minIndex = 0;
 		for(int i=1; i<heap.size(); i++){
-			printf("comp %d \n",ceng.Compare(min, heap[i], &sortorder));
+			//printf("comp %d \n",ceng.Compare(min, heap[i], &sortorder));
 			if(ceng.Compare(min, heap[i], &sortorder) == 1){
 				min = heap[i];
 				minIndex = i;
