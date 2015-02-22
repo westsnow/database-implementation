@@ -13,6 +13,7 @@ struct thread_info {    /* Used as argument to thread_start() */
    Pipe *runBuffer;
    int runLen;
    int index;
+   int pageCount;
 };
 
 using namespace std;

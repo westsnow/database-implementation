@@ -12,7 +12,7 @@ void swap(std::vector<Record*> &run, int i, int j){
 	run[i] = run[j];
 	run[j] = tmp;
 }
-// 3 2 1 5 
+// 3 2 1 5
 void BigQ::sortVector(std::vector<Record*> &run, OrderMaker &sortorder){
 	if(run.size() < 2)
 		return;
@@ -98,7 +98,7 @@ void initializeHeap(std::vector<Pipe*> *runBuffers, std::vector<Record*> *heap,i
 
 
 void* consumeInnerPipe (void *arg) {
-	
+
 	Pipe *pipe = (Pipe *) arg;
 	File tmpFile;
 	Record tmp;
@@ -197,7 +197,7 @@ BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
 				}
 		}else{
 			//printf("Appended\n");
-		}	
+		}
 	}
 	//retrive records from last page;
 	Record recRetrive;

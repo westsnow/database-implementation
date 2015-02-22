@@ -25,7 +25,7 @@ void *producer (void *arg) {
 	dbfile.Close ();
 	myPipe->ShutDown ();
 
-	cout << " producer: inserted " << counter << " recs into the pipe\n";
+	//cout << " producer: inserted " << counter << " recs into the pipe\n";
 }
 
 void *consumer (void *arg) {
