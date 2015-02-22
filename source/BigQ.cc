@@ -42,14 +42,17 @@ void* producerRunPipe(void *arg){
 
 	//number pages in file, used in case I hit the last page
 	int fileSize = tmpFile.GetLength();
-	Page p = Page();
-
+	Page p;
+	int recCount = 0;
 	//While there are pages left to produce on this run
 	while(  currPage < ti->pageCount
 		 ){
 		//Get current page
 		tmpFile.GetPage(&p, (ti->index + currPage ));
 		Record *r = new Record();
+		printf("run %d, page %d, size: %d \n", ti->id, currPage, p.numRecs);
+		recCount +=p.numRecs;
+
 		while(p.GetFirst(r)){
 			//printf("run %d inserting into pipe \n", ti->index);
 
@@ -60,13 +63,14 @@ void* producerRunPipe(void *arg){
 	}
 	tmpFile.Close();
 
-	//printf("shutting down buffer");
+
+	printf("file has %d pages", fileSize);
 	ti->runBuffer->ShutDown();
 }
 
 void initializeHeap(std::vector<Pipe*> *runBuffers, std::vector<Record*> *heap, std::vector<int> &pageCount, int numRuns, int runLength){
 	printf("initializing \n");
-
+	int start = 0;
 	for (int i=0;i<numRuns;i++){
 		int buffsz = 16;
 		printf("Initializing pipe %d, with buffer_size %d \n", i,buffsz);
@@ -78,8 +82,8 @@ void initializeHeap(std::vector<Pipe*> *runBuffers, std::vector<Record*> *heap, 
 		thread_info *ti = new thread_info();
 		ti->runBuffer = runPipe;
 		ti->runLen = runLength;
-		if(i == 0) ti->index = 0;
-		else ti->index = (i-1)*runLength+pageCount[i-1];
+		ti->index = start;
+		ti->id = i;
 		ti->pageCount = pageCount[i];
 
 		pthread_create (&runThread, NULL, producerRunPipe, (void *)ti);
@@ -92,7 +96,7 @@ void initializeHeap(std::vector<Pipe*> *runBuffers, std::vector<Record*> *heap, 
 		Record *r = new Record;
 		runPipe->Remove(r);
 		heap->push_back(r);
-
+		start +=  pageCount[i];
 	}
 
 }

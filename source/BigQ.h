@@ -14,6 +14,7 @@ struct thread_info {    /* Used as argument to thread_start() */
    int runLen;
    int index;
    int pageCount;
+   int id;
 };
 
 using namespace std;
