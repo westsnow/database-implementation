@@ -64,7 +64,7 @@ void* producerRunPipe(void *arg){
 	ti->runBuffer->ShutDown();
 }
 
-void initializeHeap(std::vector<Pipe*> *runBuffers, std::vector<Record*> *heap, std::vector<int> *pageCount, int numRuns, int runLength){
+void initializeHeap(std::vector<Pipe*> *runBuffers, std::vector<Record*> *heap, std::vector<int> &pageCount, int numRuns, int runLength){
 	printf("initializing \n");
 
 	for (int i=0;i<numRuns;i++){
@@ -102,50 +102,53 @@ void initializeHeap(std::vector<Pipe*> *runBuffers, std::vector<Record*> *heap, 
 
 void* consumeInnerPipe (void *arg) {
 
-	Pipe *pipe = (Pipe *) arg;
-	File tmpFile;
-	Record tmp;
-	Page page;
-	tmpFile.Open(0, "./generatedRuns.tmp");
+        Pipe *pipe = (Pipe *) arg;
+        File tmpFile;
+        Record tmp;
+        Page page;
+        tmpFile.Open(0, "./generatedRuns.tmp");
 
-	//record how many pages each run has.
- 	pageCount.clear();
- 	pageCount.resize(recordCount.size());
- 	//record how many records have been added to the current run
- 	int recordNum = 0;
-  	//record how many pages have been added to the current run
- 	int pageNum = 1;
-
- 	int runNum = 0;
+        //record how many pages each run has.
+        pageCount.clear();
+        //record how many records have been added to the current run
+        int recordNum = 0;
+        //record how many pages have been added to the current run
+        int pageNum = 1;
 
 
     while(pipe->Remove(&tmp)){
-  //   	printf("sucked a record from inner pipe\n");
-		// tmp.Print(new Schema ("/Users/westsnow/GitHub/database-implementation/source/catalog", "nation"));
-		if(!page.Append(&tmp)){
-			//tmp.Print(new Schema ("/Users/westsnow/GitHub/database-implementation/source/catalog", "nation"));
-			pageNum++;
-			tmpFile.AddPageToEnd(&page);
-			page.EmptyItOut();
-			page.Append(&tmp);
-			recordNum++;
-		}else{
-			recordNum++;
-		}
-		if(recordNum == recordCount[runNum]){
-			if( !page.isEmpty() ){
-				//pageNum++;
-				tmpFile.AddPageToEnd(&page);
-				page.EmptyItOut();
-			}
-			pageCount[runNum++] = pageNum;
-			pageNum = 1;
-		}
-	}
-	if( !page.isEmpty())
-		tmpFile.AddPageToEnd(&page);
-	//printf("Pages in file: %d", tmpFile.GetLength());
-	tmpFile.Close();
+  //    printf("sucked a record from inner pipe\n");
+                // tmp.Print(new Schema ("/Users/westsnow/GitHub/database-implementation/source/catalog", "nation"));
+                if(!page.Append(&tmp)){
+                        //tmp.Print(new Schema ("/Users/westsnow/GitHub/database-implementation/source/catalog", "nation"));
+                        pageNum++;
+                        tmpFile.AddPageToEnd(&page);
+                        page.EmptyItOut();
+                        page.Append(&tmp);
+                        recordNum++;
+                }else{
+                        recordNum++;
+                }
+                if(recordNum == recordCount[pageCount.size()]){
+                        recordNum = 0;
+                        printf("record num is %d, %d \n", pageCount.size(),recordCount[pageCount.size()]);
+                        if( !page.isEmpty() ){
+                                //pageNum++;
+                                tmpFile.AddPageToEnd(&page);
+                                page.EmptyItOut();
+                        }
+                        pageCount.push_back(pageNum);
+                printf("pagecount[%d] = %d\n", pageCount.size()-1, pageCount[pageCount.size()-1]);
+
+                        pageNum = 1;
+                }
+        }
+        if( !page.isEmpty())
+                // pageCount.push_back(pageNum);
+                //printf("pagecount[%d] = %d\n", pageCount.size()-1, pageCount[pageCount.size()-1]);
+                tmpFile.AddPageToEnd(&page);
+        //printf("Pages in file: %d", tmpFile.GetLength());
+        tmpFile.Close();
 }
 
 
@@ -253,7 +256,7 @@ BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
 	//Initialize one pipe per run, and creates a producer for each pipe
 	//Each producer will extract rows from its run in the file and feed the pipe
 	//Heap is initialized with first row of each run (consume from its runBuffer[i])
-	initializeHeap(&runBuffers, &heap, &pageCount, runSize, runlen);
+	initializeHeap(&runBuffers, &heap, pageCount, runSize, runlen);
 
 
 	Record 				*min;
