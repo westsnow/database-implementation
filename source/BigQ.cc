@@ -43,12 +43,12 @@ void* producerRunPipe(void *arg){
 	//number pages in file, used in case I hit the last page
 	int fileSize = tmpFile.GetLength();
 	Page p = Page();
+
 	//While there are pages left to produce on this run
-	while(  (ti->index*ti->runLen)+currPage <  (ti->index+1)*ti->runLen &&
-			(ti->index*ti->runLen)+currPage <  fileSize -1
-		){
+	while(  currPage < ti->pageCount
+		 ){
 		//Get current page
-		tmpFile.GetPage(&p, (ti->index*ti->runLen)+currPage );
+		tmpFile.GetPage(&p, (ti->index + currPage ));
 		Record *r = new Record();
 		while(p.GetFirst(r)){
 			//printf("run %d inserting into pipe \n", ti->index);
@@ -64,25 +64,27 @@ void* producerRunPipe(void *arg){
 	ti->runBuffer->ShutDown();
 }
 
-void initializeHeap(std::vector<Pipe*> *runBuffers, std::vector<Record*> *heap,int numRuns, int runLength){
+void initializeHeap(std::vector<Pipe*> *runBuffers, std::vector<Record*> *heap, std::vector<int> *pageCount, int numRuns, int runLength){
 	printf("initializing \n");
 
 	for (int i=0;i<numRuns;i++){
 		int buffsz = 16;
-		//printf("Initializing pipe %d, with buffer_size %d \n", i,buffsz);
+		printf("Initializing pipe %d, with buffer_size %d \n", i,buffsz);
 		Pipe *runPipe = new Pipe(buffsz);
 
-		// printf("Initializing Producer Thread \n");
+		printf("Initializing Producer Thread \n");
 		pthread_t runThread;
 
 		thread_info *ti = new thread_info();
 		ti->runBuffer = runPipe;
 		ti->runLen = runLength;
-		ti->index = i;
+		if(i == 0) ti->index = 0;
+		else ti->index = (i-1)*runLength+pageCount[i-1];
+		ti->pageCount = pageCount[i];
 
 		pthread_create (&runThread, NULL, producerRunPipe, (void *)ti);
 
-		// printf("Storing pipe pointer \n");
+		printf("Storing pipe pointer \n");
 
 		runBuffers->push_back( runPipe) ;
 
@@ -94,6 +96,7 @@ void initializeHeap(std::vector<Pipe*> *runBuffers, std::vector<Record*> *heap,i
 	}
 
 }
+
 
 
 
@@ -250,7 +253,7 @@ BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
 	//Initialize one pipe per run, and creates a producer for each pipe
 	//Each producer will extract rows from its run in the file and feed the pipe
 	//Heap is initialized with first row of each run (consume from its runBuffer[i])
-	initializeHeap(&runBuffers, &heap, runSize, runlen);
+	initializeHeap(&runBuffers, &heap, &pageCount, runSize, runlen);
 
 
 	Record 				*min;
