@@ -2,11 +2,11 @@
 #define BIGQ_H
 #include <pthread.h>
 #include <iostream>
+#include <utility>
 #include <vector>
 #include "Pipe.h"
 #include "File.h"
 #include "Record.h"
-
 
 
 struct thread_info {    /* Used as argument to thread_start() */
@@ -30,12 +30,22 @@ public:
 	~BigQ ();
 
 private:
-	ComparisonEngine 	ceng;
-
 	// void* consumeInnerPipe (void *arg);
 
 	int buffsz; // pipe cache size
 
+};
+
+
+class CompareRecord{
+private:
+	OrderMaker sortorder;
+	ComparisonEngine comp;
+	
+public:
+	CompareRecord(OrderMaker _sortorder);
+	~CompareRecord();
+	bool operator()( Record *r1,  Record *r2);
 };
 
 #endif

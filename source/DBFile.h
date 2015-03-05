@@ -12,42 +12,49 @@
 typedef enum {heap, sorted, tree} fType;
 
 // stub DBFile header..replace it with your own DBFile.h 
-
-class heap{
+class GeneralDBFile{
+protected:
 	File *opened_file;
 	Page *curr_page;
 	int page_number;
-
 public:
-	heap();
-	~heap();
+	GeneralDBFile();
+	~GeneralDBFile();
+	virtual int Create (char *fpath, fType file_type, void *startup) = 0;
+	virtual int Open (char *fpath) = 0;
+	virtual int Close () = 0;
+	virtual int Load (Schema &myschema, char *loadpath) = 0;
+	virtual void MoveFirst () = 0;
+	virtual int Add (Record &addme) = 0;
+	virtual int GetNext (Record &fetchme) = 0;
+	virtual int GetNext (Record &fetchme, CNF &cnf, Record &literal) = 0;
+};
 
+class Heap: public GeneralDBFile{
+public:
+	Heap();
+	~Heap();
 	int Create (char *fpath, fType file_type, void *startup);
-	int Open (char *fpath);
+	int Open (char *fpath) ;
 	int Close ();
 	int Load (Schema &myschema, char *loadpath);
 	void MoveFirst ();
-	int Add (Record &addme);
-	int GetNext (Record &fetchme);
-	int GetNext (Record &fetchme, CNF &cnf, Record &literal);
-
+	int Add (Record &addme) ;
+	int GetNext (Record &fetchme) ;
+	int GetNext (Record &fetchme, CNF &cnf, Record &literal) ;
 };
 
-class sorted{
+// class Sorted : public GeneralDBFile{
 
-public:
-	int Create (char *fpath, fType file_type, void *startup);
-	int Open (char *fpath);
-	int Close ();
-	int Load (Schema &myschema, char *loadpath);
-	void MoveFirst ();
-	int Add (Record &addme);
-	int GetNext (Record &fetchme);
-	int GetNext (Record &fetchme, CNF &cnf, Record &literal);
-};
+// public:
+// 	Sorted():GeneralDBFile(){};
+// 	~Sorted();
+// };
 
 
 class DBFile {
+private:
+	GeneralDBFile* generalVar;
 
 public:
 	DBFile (); 
@@ -65,7 +72,6 @@ public:
 		}
 	}
 
-	int getPageNumber();
 	int Create (char *fpath, fType file_type, void *startup);
 	int Open (char *fpath);
 	int Close ();

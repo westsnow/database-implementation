@@ -15,36 +15,37 @@
 // stub file .. replace it with your own DBFile.cc
 
 
+GeneralDBFile::GeneralDBFile(){
+
+}
+
+GeneralDBFile::~GeneralDBFile(){
+
+}
 //Heap
-heap::heap(){
+Heap::Heap(){
 	opened_file = new File();
 	curr_page = new Page();
 	page_number = 0;
 }
 
 
-int  heap::Create (char *f_path, fType f_type, void *startup) {
+int Heap::Create (char *f_path, fType f_type, void *startup) {
 
 	File file;
-	//ofstream header_file;
+
+	ofstream header_file;
 
 	// construct path of the header meta-data file
-	// char header_path[100];
-	// char final_path[100];
-	// sprintf (final_path, "%s%s.b", bin_path, f_path);
-	// sprintf (header_path, "%s.header", final_path);
+	char header_path[100];
+	sprintf (header_path, "%s.header", f_path);
+	// write meta-data file depending on type of file
+	header_file.open(header_path);
+	if(!header_file.is_open())
+		return 0;
+	header_file <<"heap"<<endl;
+	header_file.close();
 
-
-	// // write meta-data file depending on type of file
-	// header_file.open(header_path);
-	// if(!header_file.is_open())
-	// 	return 0;
-
-	// switch(f_type){
-	// 	case heap: header_file <<"heap"<<endl; break;
-	// }
-
-	// header_file.close();
 
 	file.Open(0,f_path);
 	file.Close();
@@ -53,7 +54,7 @@ int  heap::Create (char *f_path, fType f_type, void *startup) {
 }
 
 
-int heap::Load (Schema &f_schema, char *loadpath) {
+int Heap::Load (Schema &f_schema, char *loadpath) {
 
 	if( !opened_file->isOpen())
 		return 0;
@@ -83,25 +84,25 @@ int heap::Load (Schema &f_schema, char *loadpath) {
 
 }
 
-int heap::Open (char *f_path) {
+int Heap::Open (char *f_path) {
 	opened_file->Open(1, f_path);
 	//cout<<"there are "<<opened_file->GetLength()<<" pages in the file"<<endl;
 	return 1;
 }
 
-void heap::MoveFirst () {
+void Heap::MoveFirst () {
 	page_number = 0;
 	if(curr_page->numRecs > 0) curr_page->EmptyItOut();
 	opened_file->GetPage(curr_page, page_number);
 }
 
-int heap::Close () {
+int Heap::Close () {
 	//cout<<"Closing DBFile";
 	opened_file->Close();
 	return 1;
 }
 
-int heap::Add (Record &rec) {
+int Heap::Add (Record &rec) {
 	//rec.Print( new Schema ("/Users/Migue/Documents/workspace/database-implementation/source/catalog", "part")  );
 	Page oPage = Page();
 
@@ -118,7 +119,7 @@ int heap::Add (Record &rec) {
 	return 1;
 }
 
-int heap::GetNext (Record &fetchme) {
+int Heap::GetNext (Record &fetchme) {
 	if(curr_page->numRecs > 0) {
 		curr_page->GetFirst(&fetchme);
 	}
@@ -133,7 +134,7 @@ int heap::GetNext (Record &fetchme) {
 	return 1;
 }
 
-int heap::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
+int Heap::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
 	//??? consume
 	ComparisonEngine comp;
 	while (GetNext(fetchme)){
@@ -153,7 +154,7 @@ int heap::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
 
 
 DBFile::DBFile () {
-
+	generalVar = NULL;
 }
 
 DBFile::~DBFile () {
@@ -161,145 +162,66 @@ DBFile::~DBFile () {
 }
 
 
-int DBFile::getPageNumber(){
-	return opened_file->GetLength();
-}
-
 int  DBFile::Create (char *f_path, fType f_type, void *startup) {
-
-	File file;
-	// ofstream header_file;
-
-	// construct path of the header meta-data file
-	// char header_path[100];
-	// char final_path[100];
-	// sprintf (final_path, "%s%s.b", bin_path, f_path);
-	// sprintf (header_path, "%s.header", final_path);
-
-
-	// // write meta-data file depending on type of file
-	// header_file.open(header_path);
-	// if(!header_file.is_open())
-	// 	return 0;
-
-	// switch(f_type){
-	// 	case heap: header_file <<"heap"<<endl; break;
-	// }
-
-	// header_file.close();
-
-	file.Open(0,f_path);
-	file.Close();
-	opened_file->Open(1, f_path);
-	return 1;
+	switch(f_type){
+		case heap:
+			generalVar = new Heap();
+			break;
+		default:
+			//do nothing
+			break;
+	}
+	return generalVar->Create(f_path, f_type, startup);
 }
 
 
 int DBFile::Load (Schema &f_schema, char *loadpath) {
-
-	if( !opened_file->isOpen())
-		return 0;
-
-
-	Page page_buffer = Page();
-
-
-	FILE *tableFile = fopen (loadpath, "r");
-	Record tmp;
-	//open file to write records
-
-   	while(tmp.SuckNextRecord(&f_schema, tableFile) ){
-		//tmp.Print(&lineitem);
-		if(page_buffer.Append(&tmp)){
-		}
-		else{
-			opened_file->AddPageToEnd(&page_buffer);
-			page_buffer.EmptyItOut();
-			page_buffer.Append(&tmp);
-		}
-	}
-	opened_file -> AddPageToEnd(&page_buffer);
-	page_buffer.EmptyItOut();
-	// cout<<"file has "<<opened_file->GetLength()<<" pages"<<endl;
-	return 1;
-
+	return generalVar->Load(f_schema, loadpath);
 }
 
 int DBFile::Open (char *f_path) {
-	opened_file->Open(1, f_path);
+
+	string line;
+	ifstream header_file;
+
+
+	// construct path of the header meta-data file
+	char header_path[100];
+	sprintf (header_path, "%s.header", f_path);
+	// write meta-data file depending on type of file
+	header_file.open(header_path);
+	if(!header_file.is_open())
+		return 0;
+	getline(header_file, line);
+	// header_file.close();
+	if( generalVar == NULL){
+		if(line=="heap")		
+			generalVar = new Heap();
+		
+	}
+
+	return generalVar->Open(f_path);
 	//cout<<"there are "<<opened_file->GetLength()<<" pages in the file"<<endl;
-	return 1;
 }
 
+
 void DBFile::MoveFirst () {
-	page_number = 0;
-	if(curr_page->numRecs > 0) curr_page->EmptyItOut();
-	opened_file->GetPage(curr_page, page_number);
+	generalVar->MoveFirst();
 }
 
 int DBFile::Close () {
-	//cout<<"Closing DBFile";
-	opened_file->Close();
-	return 1;
+	return generalVar->Close();
 }
 
 int DBFile::Add (Record &rec) {
-	//rec.Print( new Schema ("/Users/Migue/Documents/workspace/database-implementation/source/catalog", "part")  );
-	Page oPage = Page();
-
-	opened_file->GetPage(&oPage, opened_file->GetLength() - 2);
-
-	//if the last page is full
-	if( !oPage.Append(&rec) ){
-		Page newPage = Page();
-		newPage.Append(&rec);
-		opened_file->AddPageToEnd(&newPage);
-	}else{
-		opened_file->AddPage(&oPage, opened_file->GetLength() - 2);
-	}
-	return 1;
+	return generalVar->Add(rec);
 }
 
 int DBFile::GetNext (Record &fetchme) {
-	if(curr_page->numRecs > 0) {
-		curr_page->GetFirst(&fetchme);
-	}
-	else{
-		page_number++;
-		if(opened_file->GetLength()> (page_number + 1) ){
-			opened_file->GetPage(curr_page, page_number);
-			curr_page->GetFirst(&fetchme);
-		}
-		else return 0;
-	}
-	return 1;
+	return generalVar->GetNext(fetchme);
+	
 }
 
-// int DBFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
-// 	ComparisonEngine comp;
-
-// 	GetNext(fetchme);
-
-// 	while(!comp.Compare(&fetchme, &literal, &cnf)){
-// 		if (GetNext(fetchme) == 0 ){
-// 			return 0;
-// 		}
-// 	}
-
-// 	return 1;
-
-// }
-
-
-
 int DBFile::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
-	//??? consume
-	ComparisonEngine comp;
-	while (GetNext(fetchme)){
-		if (comp.Compare(&fetchme, &literal, &cnf)){
-			return 1;
-		}
-	}
-
-	return 0;
+	return generalVar->GetNext(fetchme, cnf, literal);
 }
