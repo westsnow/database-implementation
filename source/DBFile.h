@@ -10,6 +10,7 @@
 #include "ComparisonEngine.h"
 
 typedef enum {heap, sorted, tree} fType;
+typedef enum {reading, writting} rwState;//whether dbfile is in reading or writting mode
 
 struct SortInfo{
 	OrderMaker 	*myOrder;
@@ -50,7 +51,12 @@ public:
 };
 
 class Sorted : public GeneralDBFile{
-
+private:
+	rwState state;
+	SortInfo* order;
+	BigQ* bigQ;
+	Pipe* inpipe;
+	Pipe* outpipe;
 public:
 	Sorted();
 	~Sorted();

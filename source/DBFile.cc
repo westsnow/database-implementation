@@ -215,6 +215,12 @@ int Sorted::Close () {
 }
 
 int Sorted::Add (Record &rec) {
+	if(state == reading){
+		//create bigQ, inPipe, outPipe;
+
+	}else{
+		inPipe->Insert (&rec);
+	}
 	return 1;
 }
 
