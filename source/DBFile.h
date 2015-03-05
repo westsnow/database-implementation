@@ -44,12 +44,20 @@ public:
 	int GetNext (Record &fetchme, CNF &cnf, Record &literal) ;
 };
 
-// class Sorted : public GeneralDBFile{
+class Sorted : public GeneralDBFile{
 
-// public:
-// 	Sorted():GeneralDBFile(){};
-// 	~Sorted();
-// };
+public:
+	Sorted();
+	~Sorted();
+	int Create (char *fpath, fType file_type, void *startup);
+	int Open (char *fpath) ;
+	int Close ();
+	int Load (Schema &myschema, char *loadpath);
+	void MoveFirst ();
+	int Add (Record &addme) ;
+	int GetNext (Record &fetchme) ;
+	int GetNext (Record &fetchme, CNF &cnf, Record &literal) ;
+};
 
 
 class DBFile {

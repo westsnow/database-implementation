@@ -29,6 +29,10 @@ Heap::Heap(){
 	page_number = 0;
 }
 
+Heap::~Heap(){
+
+}
+
 
 int Heap::Create (char *f_path, fType f_type, void *startup) {
 
@@ -51,6 +55,7 @@ int Heap::Create (char *f_path, fType f_type, void *startup) {
 	file.Close();
 	opened_file->Open(1, f_path);
 	return 1;
+	
 }
 
 
@@ -147,7 +152,15 @@ int Heap::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
 }
 
 //Sorted
+Sorted::Sorted(){
+	opened_file = new File();
+	curr_page = new Page();
+	page_number = 0;
+}
 
+Sorted::~Sorted(){
+	
+}
 
 //DBFile
 
