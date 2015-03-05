@@ -11,6 +11,11 @@
 
 typedef enum {heap, sorted, tree} fType;
 
+struct SortInfo{
+	OrderMaker 	*myOrder;
+	int 		runLength;
+};
+
 // stub DBFile header..replace it with your own DBFile.h 
 class GeneralDBFile{
 protected:

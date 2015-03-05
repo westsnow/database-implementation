@@ -3,15 +3,41 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <math.h>
+
+#include "Pipe.h"
 #include "DBFile.h"
 #include "Record.h"
 using namespace std;
+
+// make sure that the information below is correct
+// char *dbfile_dir = "/cise/homes/shuai/DBIDATA/output/"; // dir where binary heap files should be stored
+// char *tpch_dir ="/cise/homes/shuai/DBIDATA/input/"; // dir where dbgen tpch files (extension *.tbl) can be found
+// char *catalog_path = "/cise/homes/shuai/DBIDATA/catalog"; // full path of the catalog file
+
+//Miguel's Settings
+  char *dbfile_dir = "/Volumes/DATA/DBIDATA/output/"; // dir where binary heap files should be stored
+  char *tpch_dir ="/Volumes/DATA//DBIDATA/input/"; // dir where dbgen tpch files (extension *.tbl) can be found
+  char *catalog_path = "/Users/Migue/Development/workspace_cpp/database-implementation/source/catalog"; // full path of the catalog file
+
+
+//char *catalog_path = "catalog";
+//char *dbfile_dir = "";
+//char *tpch_dir ="/cise/tmp/dbi_sp11/DATA/1G/";
+
 
 extern "C" {
 	int yyparse(void);   // defined in y.tab.c
 }
 
 extern struct AndList *final;
+
+typedef struct {
+	Pipe *pipe;
+	OrderMaker *order;
+	bool print;
+	bool write;
+}testutil;
 
 class relation {
 
@@ -35,14 +61,30 @@ public:
 	}
 
 	void get_cnf (CNF &cnf_pred, Record &literal) {
-		cout << " Enter CNF predicate (when done press ctrl-D):\n\t";
+		cout << "\n enter CNF predicate (when done press ctrl-D):\n\t";
   		if (yyparse() != 0) {
-			std::cout << "Can't parse your CNF.\n";
+			cout << " Error: can't parse your CNF.\n";
 			exit (1);
 		}
 		cnf_pred.GrowFromParseTree (final, schema (), literal); // constructs CNF predicate
 	}
+	void get_sort_order (OrderMaker &sortorder) {
+		cout << "\n specify sort ordering (when done press ctrl-D):\n\t ";
+  		if (yyparse() != 0) {
+			cout << " Error: can't parse your CNF.\n";
+			exit (1);
+		}
+		Record literal;
+		CNF sort_pred;
+		sort_pred.GrowFromParseTree (final, schema (), literal); // constructs CNF predicate
+		OrderMaker dummy;
+		sort_pred.GetSortOrders (sortorder, dummy);
+	}
 };
+
+
+relation *rel;
+
 
 char *supplier = "supplier"; 
 char *partsupp = "partsupp"; 
@@ -55,7 +97,7 @@ char *lineitem = "lineitem";
 
 relation *s, *p, *ps, *n, *li, *r, *o, *c;
 
-void setup (char *catalog_path, char *dbfile_dir, char *tpch_dir) {
+void setup () {
 	cout << " \n** IMPORTANT: MAKE SURE THE INFORMATION BELOW IS CORRECT **\n";
 	cout << " catalog location: \t" << catalog_path << endl;
 	cout << " tpch files dir: \t" << tpch_dir << endl;

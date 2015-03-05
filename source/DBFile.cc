@@ -162,6 +162,71 @@ Sorted::~Sorted(){
 	
 }
 
+int Sorted::Create (char *f_path, fType f_type, void *startup) {
+
+	File 			file;
+	ofstream 		header_file;
+	SortInfo 		*si = (SortInfo *) startup;
+
+	// construct path of the header meta-data file
+	char header_path[100];
+	sprintf (header_path, "%s.header", f_path);
+	// write meta-data file depending on type of file
+
+	header_file.open(header_path);
+	if(!header_file.is_open())
+		return 0;
+	header_file <<"sorted"<<endl;
+	header_file <<si->runLength<<endl;
+	header_file <<si->myOrder->numAtts<<endl;
+
+	for(int i=0;i<si->myOrder->numAtts;i++)
+		header_file <<si->myOrder->whichAtts[i]<<endl;
+
+	for(int i=0;i<si->myOrder->numAtts;i++)
+		header_file <<si->myOrder->whichTypes[i]<<endl;
+
+	header_file.close();
+
+
+	file.Open(0,f_path);
+	file.Close();
+	opened_file->Open(1, f_path);
+	return 1;
+
+}
+
+int Sorted::Load (Schema &f_schema, char *loadpath) {
+	return 1;
+}
+
+int Sorted::Open (char *f_path) {
+
+	return 1;
+}
+
+
+void Sorted::MoveFirst () {
+
+}
+
+int Sorted::Close () {
+	return 1;
+}
+
+int Sorted::Add (Record &rec) {
+	return 1;
+}
+
+int Sorted::GetNext (Record &fetchme) {
+	return 1;
+
+}
+
+int Sorted::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
+	return 1;
+}
+
 //DBFile
 
 
@@ -179,6 +244,9 @@ int  DBFile::Create (char *f_path, fType f_type, void *startup) {
 	switch(f_type){
 		case heap:
 			generalVar = new Heap();
+			break;
+		case sorted:
+			generalVar = new Sorted();
 			break;
 		default:
 			//do nothing
