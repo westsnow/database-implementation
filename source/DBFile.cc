@@ -369,6 +369,7 @@ int DBFile::Open (char *f_path) {
 		}
 
 	}
+	header_file.close();
 	printf("file opened");
 
 	return generalVar->Open(f_path);
