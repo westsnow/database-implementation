@@ -345,27 +345,22 @@ int DBFile::Open (char *f_path) {
 
 			//Get Run Length from header file
 			getline(header_file, line);
-			int runLen;
-			sscanf( line.c_str(), "%d", &runLen );
-
+			int runLen = atoi(line.c_str());
 
 			//Get Number of sorting attributes
 			getline(header_file, line);
-			sscanf( line.c_str(), "%d", order.numAtts );
+			order.numAtts = atoi(line.c_str());
 
 			//Get Number of sorting attributes
 			for(int i=0;i<order.numAtts;i++){
 				getline(header_file, line);
-				sscanf( line.c_str(), "%d", order.whichAtts[i] );
-
+				order.whichAtts[i] = atoi(line.c_str());
 			}
 
 			//Get Number of sorting attributes
 			for(int i=0;i<order.numAtts;i++){
 				getline(header_file, line);
-				int t;
-				sscanf( line.c_str(), "%d", t );
-				order.whichTypes[i] = (Type) t;
+				order.whichTypes[i] = (Type) atoi(line.c_str());
 			}
 
 			SortInfo startup = {&order, runLen};
