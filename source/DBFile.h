@@ -20,6 +20,7 @@ struct SortInfo{
 // stub DBFile header..replace it with your own DBFile.h 
 class GeneralDBFile{
 protected:
+	ComparisonEngine 	ceng;
 	File *opened_file;
 	Page *curr_page;
 	int page_number;
@@ -52,11 +53,14 @@ public:
 
 class Sorted : public GeneralDBFile{
 private:
+	int runLength;
 	rwState state;
 	SortInfo* order;
 	BigQ* bigQ;
 	Pipe* inpipe;
 	Pipe* outpipe;
+	switchToReadMode();
+	switchToWriteMode();
 public:
 	Sorted();
 	~Sorted();
@@ -74,7 +78,6 @@ public:
 class DBFile {
 private:
 	GeneralDBFile* generalVar;
-
 public:
 	DBFile (); 
 	~DBFile();

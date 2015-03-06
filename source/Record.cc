@@ -17,7 +17,9 @@ Record :: ~Record () {
 	bits = NULL;
 }
 
-
+int Record :: isNULL(){
+	return bits == NULL;
+}
 int Record :: SuckNextRecord (Schema *mySchema, FILE *textFile) {
 
 	// this is temporary storage

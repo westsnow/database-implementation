@@ -153,6 +153,7 @@ int Heap::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
 
 //Sorted
 Sorted::Sorted(){
+	state = reading;
 	opened_file = new File();
 	curr_page = new Page();
 	page_number = 0;
@@ -201,7 +202,6 @@ int Sorted::Load (Schema &f_schema, char *loadpath) {
 }
 
 int Sorted::Open (char *f_path) {
-
 	return 1;
 }
 
@@ -214,19 +214,74 @@ int Sorted::Close () {
 	return 1;
 }
 
-int Sorted::Add (Record &rec) {
-	if(state == reading){
-		//create bigQ, inPipe, outPipe;
+int Sorted::switchToReadMode() {
+	if(state == write){
+		//close inpipe, then the bigq will start phase 2
+		inPipe.ShutDown();
+		//do two way merge, merge records from putpipe and current dbfile into a new file.
+		//create a new file
+		File newFile;
+		char new_path[100];
+		sprintf (new_path, "%s.newFile", cur_path);
+		newFile.Open(0, new_path);
+		//begin merging
+		Page page;
+		Record pipeRec;
+		Record fileRec;
+		Heap heapFile;
+		// play a little trick, treat this current file as a heap dbfile, whose interface will make life easier.
+		heapFile.Open(cur_path);
+		heapFile.MoveFirst();
+		while(true){
+			Record* tmp == NULL;
+			if(pipeRec.isNULL())
+				pipe->Remove (&pipeRec);
+			if(fileRec.isNULL())
+				heapFile.GetNext(fileRec);
+			if(  pipeRec.isNULL() && fileRec.isNULL()){
+				if(!page.isEmpty())
+					newFile.AddPageToEnd(&page);
+				break;
+			}
+			if( pipeRec.isNULL())
+				tmp = &fileRec;
+			if( fileRec.isNull())
+				tmp = &pipeRec;
+			if(tmp == NULL){
+				tmp = ceng.Compare(pipeRec, fileRec, &sortorder) == 1 ? fileRec : pipeRec;  
+			}
+			//add tmp to the new file;
+			if( !page.Append(tmp) ){
+				newFile.AddPageToEnd(&page);
+				page.EmptyItOut();
+				page.Append(tmp);
+			}
+		}
 
-	}else{
-		inPipe->Insert (&rec);
 	}
+	// interchange the charater of current file and newfile
+	remove( cur_path );
+	rename(new_path, cur_path);
+	return 1;
+}
+
+int Sorted::switchToWriteMode(){
+	if(state == read){
+		int buffsz = 128;
+		inPipe = new Pipe(buffsz);
+		outPipe = new Pipe(buffsz);
+		bigQ = new BigQ(inPipe, outPipe, order, runLength);
+	}
+}
+int Sorted::Add (Record &rec) {
+	switchToWriteMode();
+	inPipe->Insert (&rec);
 	return 1;
 }
 
 int Sorted::GetNext (Record &fetchme) {
+	switchToReadMode();
 	return 1;
-
 }
 
 int Sorted::GetNext (Record &fetchme, CNF &cnf, Record &literal) {

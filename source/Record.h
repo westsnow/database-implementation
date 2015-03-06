@@ -37,6 +37,9 @@ public:
 	Record ();
 	~Record();
 
+	//return whether the current record is empty
+	int isNULL();
+	
 	// suck the contents of the record fromMe into this; note that after
 	// this call, fromMe will no longer have anything inside of it
 	void Consume (Record *fromMe);
