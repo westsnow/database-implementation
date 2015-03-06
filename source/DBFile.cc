@@ -6,6 +6,7 @@
 #include "ComparisonEngine.h"
 #include "DBFile.h"
 #include "Defs.h"
+#include "Pipe.h"
 #include <fstream>
 #include <string>
 #include <iostream>
@@ -202,7 +203,10 @@ int Sorted::Load (Schema &f_schema, char *loadpath) {
 }
 
 int Sorted::Open (char *f_path) {
+	opened_file->Open(1, f_path);
+	//cout<<"there are "<<opened_file->GetLength()<<" pages in the file"<<endl;
 	return 1;
+
 }
 
 
@@ -211,13 +215,14 @@ void Sorted::MoveFirst () {
 }
 
 int Sorted::Close () {
+	opened_file->Close();
 	return 1;
 }
 
 int Sorted::switchToReadMode() {
 	if(state == write){
 		//close inpipe, then the bigq will start phase 2
-		inPipe.ShutDown();
+		inpipe->ShutDown();
 		//do two way merge, merge records from putpipe and current dbfile into a new file.
 		//create a new file
 		File newFile;
@@ -233,9 +238,9 @@ int Sorted::switchToReadMode() {
 		heapFile.Open(cur_path);
 		heapFile.MoveFirst();
 		while(true){
-			Record* tmp == NULL;
+			Record* tmp = NULL;
 			if(pipeRec.isNULL())
-				pipe->Remove (&pipeRec);
+				outpipe->Remove (&pipeRec);
 			if(fileRec.isNULL())
 				heapFile.GetNext(fileRec);
 			if(  pipeRec.isNULL() && fileRec.isNULL()){
@@ -248,7 +253,7 @@ int Sorted::switchToReadMode() {
 			if( fileRec.isNull())
 				tmp = &pipeRec;
 			if(tmp == NULL){
-				tmp = ceng.Compare(pipeRec, fileRec, &sortorder) == 1 ? fileRec : pipeRec;  
+				tmp = ceng.Compare(&pipeRec, &fileRec, si->myOrder) == 1 ? fileRec : pipeRec;
 			}
 			//add tmp to the new file;
 			if( !page.Append(tmp) ){
@@ -257,25 +262,26 @@ int Sorted::switchToReadMode() {
 				page.Append(tmp);
 			}
 		}
-
+		remove( cur_path );
+		rename(new_path, cur_path);
 	}
 	// interchange the charater of current file and newfile
-	remove( cur_path );
-	rename(new_path, cur_path);
+
 	return 1;
 }
 
 int Sorted::switchToWriteMode(){
 	if(state == read){
 		int buffsz = 128;
-		inPipe = new Pipe(buffsz);
-		outPipe = new Pipe(buffsz);
-		bigQ = new BigQ(inPipe, outPipe, order, runLength);
+		inpipe = new Pipe(buffsz);
+		outpipe = new Pipe(buffsz);
+		bigQ = new BigQ(inpipe, outpipe, si->myOrder, si->runLength);
 	}
+	return 1;
 }
 int Sorted::Add (Record &rec) {
 	switchToWriteMode();
-	inPipe->Insert (&rec);
+	inpipe->Insert (&rec);
 	return 1;
 }
 
@@ -337,10 +343,41 @@ int DBFile::Open (char *f_path) {
 	getline(header_file, line);
 	// header_file.close();
 	if( generalVar == NULL){
-		if(line=="heap")		
+		if(line=="heap")
 			generalVar = new Heap();
-		
+
+		else if(line == "sorted"){
+			Sorted *sorted = new Sorted();
+			generalVar = sorted;
+			OrderMaker order;
+
+			//Get Run Length from header file
+			getline(header_file, line);
+			int runLen = std::stoi(line);
+
+			//Get Number of sorting attributes
+			getline(header_file, line);
+			order.numAtts = std::stoi(line);
+
+			//Get Number of sorting attributes
+			for(int i=0;i<order.numAtts;i++){
+				getline(header_file, line);
+				order.whichAtts[i] = std::stoi(line);
+			}
+
+			//Get Number of sorting attributes
+			for(int i=0;i<order.numAtts;i++){
+				getline(header_file, line);
+				order.whichTypes[i] = (Type) std::stoi(line);
+			}
+
+			SortInfo startup = {&order, runLen};
+			sorted->si = &startup;
+			sorted->cur_path = f_path;
+		}
+
 	}
+	printf("file opened");
 
 	return generalVar->Open(f_path);
 	//cout<<"there are "<<opened_file->GetLength()<<" pages in the file"<<endl;

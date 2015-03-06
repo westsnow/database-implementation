@@ -55,15 +55,17 @@ class Sorted : public GeneralDBFile{
 private:
 	int runLength;
 	rwState state;
-	SortInfo* order;
 	BigQ* bigQ;
 	Pipe* inpipe;
 	Pipe* outpipe;
-	switchToReadMode();
-	switchToWriteMode();
+	int switchToReadMode();
+	int switchToWriteMode();
+
 public:
 	Sorted();
 	~Sorted();
+	SortInfo* si;
+	char* cur_path;
 	int Create (char *fpath, fType file_type, void *startup);
 	int Open (char *fpath) ;
 	int Close ();
