@@ -1,12 +1,4 @@
-#include "TwoWayList.h"
-#include "Record.h"
-#include "Schema.h"
-#include "File.h"
-#include "Comparison.h"
-#include "ComparisonEngine.h"
 #include "DBFile.h"
-#include "Defs.h"
-#include "Pipe.h"
 #include <fstream>
 #include <string>
 #include <iostream>
@@ -220,7 +212,7 @@ int Sorted::Close () {
 }
 
 int Sorted::switchToReadMode() {
-	if(state == write){
+	if(state == writting){
 		//close inpipe, then the bigq will start phase 2
 		inpipe->ShutDown();
 		//do two way merge, merge records from putpipe and current dbfile into a new file.
@@ -250,10 +242,10 @@ int Sorted::switchToReadMode() {
 			}
 			if( pipeRec.isNULL())
 				tmp = &fileRec;
-			if( fileRec.isNull())
+			if(fileRec.isNULL())
 				tmp = &pipeRec;
 			if(tmp == NULL){
-				tmp = ceng.Compare(&pipeRec, &fileRec, si->myOrder) == 1 ? fileRec : pipeRec;
+				tmp = ceng.Compare(&pipeRec, &fileRec, si->myOrder) == 1 ? &fileRec : &pipeRec;
 			}
 			//add tmp to the new file;
 			if( !page.Append(tmp) ){
@@ -271,11 +263,11 @@ int Sorted::switchToReadMode() {
 }
 
 int Sorted::switchToWriteMode(){
-	if(state == read){
+	if(state == reading){
 		int buffsz = 128;
 		inpipe = new Pipe(buffsz);
 		outpipe = new Pipe(buffsz);
-		bigQ = new BigQ(inpipe, outpipe, si->myOrder, si->runLength);
+		bigQ = new BigQ(*inpipe, *outpipe, *(si->myOrder), si->runLength);
 	}
 	return 1;
 }
@@ -314,7 +306,6 @@ int  DBFile::Create (char *f_path, fType f_type, void *startup) {
 			break;
 		case sorted:
 			generalVar = new Sorted();
-
 			break;
 		default:
 			//do nothing

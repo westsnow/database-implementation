@@ -8,6 +8,10 @@
 #include "File.h"
 #include "Comparison.h"
 #include "ComparisonEngine.h"
+#include "Defs.h"
+#include "Pipe.h"
+#include "BigQ.h"
+
 
 typedef enum {heap, sorted, tree} fType;
 typedef enum {reading, writting} rwState;//whether dbfile is in reading or writting mode
