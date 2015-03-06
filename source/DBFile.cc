@@ -314,6 +314,7 @@ int  DBFile::Create (char *f_path, fType f_type, void *startup) {
 			break;
 		case sorted:
 			generalVar = new Sorted();
+
 			break;
 		default:
 			//do nothing
