@@ -368,22 +368,22 @@ int DBFile::Open (char *f_path) {
 
 			//Get Run Length from header file
 			getline(header_file, line);
-			int runLen = std::stoi(line);
+			int runLen = atoi(line.c_str());
 
 			//Get Number of sorting attributes
 			getline(header_file, line);
-			order.numAtts = std::stoi(line);
+			order.numAtts = atoi(line.c_str());
 
 			//Get Number of sorting attributes
 			for(int i=0;i<order.numAtts;i++){
 				getline(header_file, line);
-				order.whichAtts[i] = std::stoi(line);
+				order.whichAtts[i] = atoi(line.c_str());
 			}
 
 			//Get Number of sorting attributes
 			for(int i=0;i<order.numAtts;i++){
 				getline(header_file, line);
-				order.whichTypes[i] = (Type) std::stoi(line);
+				order.whichTypes[i] = (Type) atoi(line.c_str());
 			}
 
 			SortInfo startup = {&order, runLen};
@@ -392,6 +392,7 @@ int DBFile::Open (char *f_path) {
 		}
 
 	}
+	header_file.close();
 	printf("file opened");
 
 	return generalVar->Open(f_path);

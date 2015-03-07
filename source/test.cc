@@ -8,7 +8,7 @@ void test3 ();
 
 int add_data (FILE *src, int numrecs, int &res) {
 	DBFile dbfile;
-	dbfile.Open (rel->path ());
+	printf("%d", dbfile.Open (rel->path ()));
 	Record temp;
 
 	int proc = 0;
