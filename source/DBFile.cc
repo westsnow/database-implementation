@@ -259,8 +259,9 @@ int Sorted::switchToReadMode() {
 	return 1;
 }
 
-void* Sorted::threadFunc(void * arg){
-	bigQ = new BigQ(*inpipe, *outpipe, *(si->myOrder), si->runLength);
+void* threadFunc(void *arg){
+	Pipes *pipes = (Pipes*)arg;
+	BigQ *bigQ = new BigQ(*(pipes->inpipe), *(pipes->outpipe), *(pipes->si->myOrder), pipes->si->runLength);
 }
 
 int Sorted::switchToWriteMode(){
@@ -268,9 +269,13 @@ int Sorted::switchToWriteMode(){
 		int buffsz = 128;
 		inpipe = new Pipe(buffsz);
 		outpipe = new Pipe(buffsz);
+		Pipes *pipes = new Pipes(); 
+		pipes->inpipe = inpipe;
+		pipes->outpipe = outpipe;
+		pipes->si = si;
 		//create a thread
 		pthread_t bigQThread;
-		pthread_create(&bigQThread, NULL, threadFunc, NULL );
+		pthread_create(&bigQThread, NULL, threadFunc, (void*) pipes );
 		state = writting;
 	}
 	return 1;

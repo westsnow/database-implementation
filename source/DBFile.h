@@ -12,14 +12,22 @@
 #include "Pipe.h"
 #include "BigQ.h"
 
-
-typedef enum {heap, sorted, tree} fType;
-typedef enum {reading, writting} rwState;//whether dbfile is in reading or writting mode
-
 struct SortInfo{
 	OrderMaker 	*myOrder;
 	int 		runLength;
 };
+
+struct Pipes
+{
+	Pipe* inpipe;
+	Pipe* outpipe;
+	SortInfo* si;
+};
+
+typedef enum {heap, sorted, tree} fType;
+typedef enum {reading, writting} rwState;//whether dbfile is in reading or writting mode
+
+
 
 // stub DBFile header..replace it with your own DBFile.h 
 class GeneralDBFile{
@@ -59,7 +67,7 @@ class Sorted : public GeneralDBFile{
 private:
 	int runLength;
 	rwState state;
-	BigQ* bigQ;
+	// BigQ* bigQ;
 	Pipe* inpipe;
 	Pipe* outpipe;
 	int switchToReadMode();
@@ -71,9 +79,8 @@ public:
 	SortInfo* si;
 	char* cur_path;
 	//to run bigQ
-	void* threadFunc(void * arg);
 	int Create (char *fpath, fType file_type, void *startup);
-	int Open (char *fpath) ;
+	int Open (char *fpath);
 	int Close ();
 	int Load (Schema &myschema, char *loadpath);
 	void MoveFirst ();
