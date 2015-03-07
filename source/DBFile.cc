@@ -190,10 +190,6 @@ int Sorted::Create (char *f_path, fType f_type, void *startup) {
 
 }
 
-int Sorted::Load (Schema &f_schema, char *loadpath) {
-	return 1;
-}
-
 int Sorted::Open (char *f_path) {
 	opened_file->Open(1, f_path);
 	//cout<<"there are "<<opened_file->GetLength()<<" pages in the file"<<endl;
@@ -207,6 +203,7 @@ void Sorted::MoveFirst () {
 }
 
 int Sorted::Close () {
+	switchToReadMode();
 	opened_file->Close();
 	return 1;
 }
@@ -258,8 +255,12 @@ int Sorted::switchToReadMode() {
 		rename(new_path, cur_path);
 	}
 	// interchange the charater of current file and newfile
-
+	state = reading;
 	return 1;
+}
+
+void* Sorted::threadFunc(void * arg){
+	bigQ = new BigQ(*inpipe, *outpipe, *(si->myOrder), si->runLength);
 }
 
 int Sorted::switchToWriteMode(){
@@ -267,7 +268,10 @@ int Sorted::switchToWriteMode(){
 		int buffsz = 128;
 		inpipe = new Pipe(buffsz);
 		outpipe = new Pipe(buffsz);
-		bigQ = new BigQ(*inpipe, *outpipe, *(si->myOrder), si->runLength);
+		//create a thread
+		pthread_t bigQThread;
+		pthread_create(&bigQThread, NULL, threadFunc, NULL );
+		state = writting;
 	}
 	return 1;
 }
@@ -276,6 +280,25 @@ int Sorted::Add (Record &rec) {
 	inpipe->Insert (&rec);
 	return 1;
 }
+
+int Sorted::Load (Schema &f_schema, char *loadpath) {
+
+	if( !opened_file->isOpen())
+		return 0;
+
+
+	FILE *tableFile = fopen (loadpath, "r");
+	Record tmp;
+	//open file to write records
+
+   	while(tmp.SuckNextRecord(&f_schema, tableFile) ){
+		Add(tmp);
+	}
+	// cout<<"file has "<<opened_file->GetLength()<<" pages"<<endl;
+	return 1;
+
+}
+
 
 int Sorted::GetNext (Record &fetchme) {
 	switchToReadMode();

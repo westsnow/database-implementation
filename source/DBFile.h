@@ -70,6 +70,8 @@ public:
 	~Sorted();
 	SortInfo* si;
 	char* cur_path;
+	//to run bigQ
+	void* threadFunc(void * arg);
 	int Create (char *fpath, fType file_type, void *startup);
 	int Open (char *fpath) ;
 	int Close ();

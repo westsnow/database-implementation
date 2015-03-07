@@ -37,6 +37,9 @@ void test1 () {
 	OrderMaker o;
 	rel->get_sort_order (o);
 
+cin.clear();
+	fflush(stdin);
+
 	struct {OrderMaker *o; int l;} startup = {&o, runlen};
 
 	DBFile dbfile;
@@ -53,6 +56,10 @@ void test1 () {
 	srand48 (time (NULL));
 
 	int proc = 1, res = 1, tot = 0;
+
+	cin.clear();
+	fflush(stdin);
+	
 	while (proc && res) {
 		int x = 0;
 		while (x < 1 || x > 3) {
