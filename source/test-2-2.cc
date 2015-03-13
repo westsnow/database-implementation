@@ -1,7 +1,7 @@
 #include "BigQ.h"
 #include <pthread.h>
 
-#include "test.h"
+#include "test-2-2.h"
 void test1 ();
 void test2 ();
 void test3 ();
@@ -9,12 +9,15 @@ void test3 ();
 int add_data (FILE *src, int numrecs, int &res) {
 	DBFile dbfile;
 	printf("%d", dbfile.Open (rel->path ()));
+
 	Record temp;
 
 	int proc = 0;
 	int xx = 20000;
-	while ((res = temp.SuckNextRecord (rel->schema (), src)) && ++proc < numrecs) {
+
+	while (proc < numrecs && (res = temp.SuckNextRecord (rel->schema (), src))) {
 		dbfile.Add (temp);
+		proc++;
 		if (proc == xx) cerr << "\t ";
 		if (proc % xx == 0) cerr << ".";
 	}
@@ -27,18 +30,19 @@ int add_data (FILE *src, int numrecs, int &res) {
 // create a dbfile interactively
 void test1 () {
 
-	int runlen = 0;
+	
 
+	OrderMaker o;
+	rel->get_sort_order (o);
+	int runlen = 0;
 	while (runlen < 1) {
 		cout << "\t\n specify runlength:\n\t ";
 		cin >> runlen;
 	}
 
-	OrderMaker o;
-	rel->get_sort_order (o);
+	
 
-cin.clear();
-	fflush(stdin);
+
 
 	struct {OrderMaker *o; int l;} startup = {&o, runlen};
 
@@ -57,9 +61,6 @@ cin.clear();
 
 	int proc = 1, res = 1, tot = 0;
 
-	cin.clear();
-	fflush(stdin);
-	
 	while (proc && res) {
 		int x = 0;
 		while (x < 1 || x > 3) {
