@@ -31,14 +31,15 @@ typedef enum {reading, writting} rwState;//whether dbfile is in reading or writt
 
 // stub DBFile header..replace it with your own DBFile.h 
 class GeneralDBFile{
-protected:
+public:
 	ComparisonEngine 	ceng;
-	File *opened_file;
-	Page *curr_page;
+	File opened_file;
+	Page curr_page;
 	int page_number;
+	SortInfo *si;
 public:
 	GeneralDBFile();
-	~GeneralDBFile();
+	virtual ~GeneralDBFile();
 	virtual int Create (char *fpath, fType file_type, void *startup) = 0;
 	virtual int Open (char *fpath) = 0;
 	virtual int Close () = 0;
@@ -66,17 +67,20 @@ public:
 class Sorted : public GeneralDBFile{
 private:
 	int runLength;
+
 	rwState state;
-	// BigQ* bigQ;
+	BigQ* bigQ;
 	Pipe* inpipe;
 	Pipe* outpipe;
 	int switchToReadMode();
 	int switchToWriteMode();
+	// pthread_t bigQThread;
+
 
 public:
 	Sorted();
 	~Sorted();
-	SortInfo* si;
+	
 	char* cur_path;
 	//to run bigQ
 	int Create (char *fpath, fType file_type, void *startup);
@@ -91,7 +95,7 @@ public:
 
 
 class DBFile {
-private:
+public:
 	GeneralDBFile* generalVar;
 public:
 	DBFile (); 

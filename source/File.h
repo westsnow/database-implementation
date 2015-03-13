@@ -87,6 +87,10 @@ public:
 	// closes the file and returns the file length (in number of pages)
 	int Close ();
 
+	// gives the last used page number for this file
+	int LastUsedPageNum();
+
+	bool IsFileEmpty();
 };
 
 

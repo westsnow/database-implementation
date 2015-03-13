@@ -1,6 +1,4 @@
 #include "BigQ.h"
-#include <algorithm>
-
 
 using namespace std;
 
@@ -41,28 +39,13 @@ void myQuicksort(std::vector<Record*> &run, int start, int end, OrderMaker &sort
 	myQuicksort(run, index + 1, end, sortorder);
 }
 
-// // 3 2 1 5
-// void BigQ::sortVector(std::vector<Record*> &run, OrderMaker &sortorder){
-// 	if(run.size() < 2)
-// 		return;
-// 	myQuicksort(run, 0, run.size()-1,  sortorder);
-// }
-
-
-CompareRecord::CompareRecord(OrderMaker _sortorder): sortorder(_sortorder){}
-CompareRecord::~CompareRecord(){}
-
-bool CompareRecord::operator()( Record *r1,  Record *r2){
-		return (comp.Compare(r1, r2, &sortorder) < 0);
-}
-
+// 3 2 1 5
 void BigQ::sortVector(std::vector<Record*> &run, OrderMaker &sortorder){
 	if(run.size() < 2)
 		return;
-	CompareRecord comp(sortorder);
-	sort(run.begin(), run.end(), comp);
-	// myQuicksort(run, 0, run.size()-1,  sortorder);
+	myQuicksort(run, 0, run.size()-1,  sortorder);
 }
+
 
 
 void* producerRunPipe(void *arg){
@@ -189,12 +172,11 @@ void* consumeInnerPipe (void *arg) {
 }
 
 
-
-BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
+void * BigQ::WorkerThread(void){
 	// printf("big q working...\n");
 	// read data from in pipe sort them into runlen pages, STEP 1, run generation.
 	int runSize = 0;
-	buffsz = 128; // pipe cache size
+	buffsz = 100; // pipe cache size
 	Pipe innerPipe (buffsz);
 	pthread_t thread1;
 	pthread_create (&thread1, NULL, consumeInnerPipe, (void *)&innerPipe);
@@ -334,6 +316,21 @@ BigQ :: BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen) {
 	printf("phase two finished \n");
 
 	out.ShutDown ();
+
+	pthread_exit(NULL); 
+
+}
+
+void * BigQ :: startThread(void * arg){
+	return reinterpret_cast<BigQ*>(arg)->WorkerThread();
+}
+
+BigQ :: BigQ (Pipe &_in, Pipe &_out, OrderMaker &_sortorder, int _runlen):
+in(_in), out(_out), sortorder(_sortorder), runlen(_runlen){
+	printf("Did i get to big q?\n");
+	//sortorder.Print();
+	pthread_create(&worker, NULL, &BigQ::startThread, this);
+	
 
 }
 

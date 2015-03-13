@@ -105,6 +105,8 @@ OrderMaker :: OrderMaker(Schema *schema) {
 
 void OrderMaker :: Print () {
 	printf("NumAtts = %5d\n", numAtts);
+	if(numAtts > 1000)
+		return;
 	for (int i = 0; i < numAtts; i++)
 	{
 		printf("%3d: %5d ", i, whichAtts[i]);
@@ -116,6 +118,7 @@ void OrderMaker :: Print () {
 			printf("String\n");
 	}
 }
+
 
 
 int CNF :: GetSortOrders (OrderMaker &left, OrderMaker &right) {
@@ -176,6 +179,55 @@ int CNF :: GetSortOrders (OrderMaker &left, OrderMaker &right) {
 	return left.numAtts;
 }
 
+bool CNF :: GetSortOrders (OrderMaker &fileOrderMaker, OrderMaker &queryOrderMaker, OrderMaker &literalOrderMaker) {
+
+	bool usable = false;
+
+	// scan all fileOrderMaker attributes, compare then with
+	// the CNF ordermaker and see if they qualify for queryOrderMaker
+	for (int i = 0; i < fileOrderMaker.numAtts; i++) {
+
+		// scan the CNF ordermaker now
+		for (int j = 0; j < numAnds; j++) {
+			// if we don't have a disjunction of length one, then it
+			// can't be acceptable for use with a sort ordering
+			if (orLens[j] != 1) {
+				continue;
+			}
+
+			// made it this far, so first verify that it is an equality check
+			if (orList[j][0].op != Equals) {
+				continue;
+			}
+
+			// check if the CNF has the attribute present with a literal on
+			// the other side
+			if (((fileOrderMaker.whichAtts[i] == orList[j][0].whichAtt1)
+					&& (Literal == orList[j][0].operand2))
+				|| ((fileOrderMaker.whichAtts[i] == orList[j][0].whichAtt2)
+					&& (Literal == orList[j][0].operand1))) {
+
+				queryOrderMaker.numAtts++;
+				queryOrderMaker.whichAtts[i] = fileOrderMaker.whichAtts[i];
+				queryOrderMaker.whichTypes[i] = fileOrderMaker.whichTypes[i];
+
+				literalOrderMaker.numAtts++;
+				literalOrderMaker.whichAtts[i] = 0;
+				literalOrderMaker.whichTypes[i] = fileOrderMaker.whichTypes[i];
+
+				usable = true;
+
+				break;
+			}
+
+			// if you reach there then its an unsuccessful attribute,
+			// return from here
+			return usable;
+		}
+	}
+
+	return usable;
+}
 
 void CNF :: Print () {
 

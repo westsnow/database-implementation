@@ -47,10 +47,10 @@ class OrderMaker {
 
 
 public:
-
 	int numAtts;
 	int whichAtts[MAX_ANDS];
 	Type whichTypes[MAX_ANDS];
+	
 	// creates an empty OrdermMaker
 	OrderMaker();
 
@@ -58,6 +58,7 @@ public:
 	// based upon ALL of their attributes
 	OrderMaker(Schema *schema);
 
+	
 	// print to the screen
 	void Print ();
 };
@@ -85,6 +86,7 @@ public:
 	// for the given comparison
 	int GetSortOrders (OrderMaker &left, OrderMaker &right);
 
+	bool GetSortOrders (OrderMaker &fileOrderMaker, OrderMaker &queryOrderMaker, OrderMaker &literalOrderMaker);
 	// print the comparison structure to the screen
 	void Print ();
 

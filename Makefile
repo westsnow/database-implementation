@@ -25,13 +25,18 @@ LIST = Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o
 OBJ_FILES = $(addprefix $(BIN), $(LIST))
 
 
-all: test
+
 
 gtest: $(OBJ_FILES) $(GOBJ_FILES) $(BIN)gtest.o 
 	$(CC) -o $(BIN)$@ $(OBJ_FILES) $(GOBJ_FILES) $(BIN)gtest.o -I$(GoogleTestDir)/include -L$(GoogleTestDir)/lib -lgtest -lpthread
 
-test: $(OBJ_FILES) $(BIN)test.o
-	$(CC) -o $(BIN)$@ $(OBJ_FILES) ./bin/test.o $(llflag) -lpthread
+test: test-1 test-2
+
+test-1: $(OBJ_FILES) $(BIN)test-2-1.o
+	$(CC) -o $(BIN)$@ $(OBJ_FILES) ./bin/test-2-1.o $(llflag) -lpthread
+
+test-2: $(OBJ_FILES) $(BIN)test-2-2.o
+	$(CC) -o $(BIN)$@ $(OBJ_FILES) ./bin/test-2-2.o $(llflag) -lpthread
 
 main: $(OBJ_FILES) $(BIN)main.o
 	$(CC) -o $(BIN)$@ $(OBJ_FILES) ./bin/main.o $(llflag)
@@ -51,6 +56,7 @@ bin/lex.yy.o: $(SRC)Lexer.l
 	lex  $(SRC)Lexer.l
 	mv lex.yy.c $(SRC)lex.yy.c
 	gcc  -c $(SRC)lex.yy.c -o $@
+
 clean: 
 	rm -f $(BIN)*
 	rm -f $(SRC)y.tab.c

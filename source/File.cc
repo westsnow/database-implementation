@@ -243,26 +243,30 @@ void File :: AddPage (Page *addMe, off_t whichPage) {
 
 
 void File :: Open (int fileLen, char *fName) {
-
+// printf("File.Open() is called and curLength is %d and fileLen is %d\n", curLength, fileLen);
 	// figure out the flags for the system open call
         int mode;
         if (fileLen == 0)
                 mode = O_TRUNC | O_RDWR | O_CREAT;
         else
                 mode = O_RDWR;
-
+// printf("reach 1\n");
 	// actually do the open
         myFilDes = open (fName, mode, S_IRUSR | S_IWUSR);
+        // printf("open result %d\n", myFilDes);
+// printf("reach 2\n");
 
 #ifdef verbose
 	cout << "Opening file " << fName << " with "<< curLength << " pages.\n";
 #endif
+// printf("reach 3\n");
 
 	// see if there was an error
 	if (myFilDes < 0) {
 		cerr << "BAD!  Open did not work for " << fName << "\n";
 		exit (1);
 	}
+// printf("reach 4\n");
 
 	// read in the buffer if needed
 	if (fileLen != 0) {
@@ -274,6 +278,7 @@ void File :: Open (int fileLen, char *fName) {
 	} else {
 		curLength = 0;
 	}
+// printf("File.Open() is ended\n");
 
 }
 
@@ -297,4 +302,22 @@ int File :: Close () {
 	
 }
 
+// gives the last used page number for this file
+int File :: LastUsedPageNum() {
+	int pageNum;
 
+        pageNum = curLength - 2;
+        if (pageNum < 0) {
+                return 0;
+        }
+
+        return pageNum;
+}
+
+bool File :: IsFileEmpty() {
+	if (0 == curLength) {
+		return true;
+	}
+
+	return false;
+}
