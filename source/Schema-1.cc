@@ -28,6 +28,11 @@ Type Schema :: FindType (char *attName) {
 	return Int;
 }
 
+char* Schema::getSchemaName(){
+	return relName;
+}
+
+
 int Schema :: GetNumAtts () {
 	return numAtts;
 }
@@ -36,39 +41,19 @@ Attribute *Schema :: GetAtts () {
 	return myAtts;
 }
 
-
-Schema :: Schema (char *fpath, int num_atts, Attribute *atts) {
-	fileName = strdup (fpath);
-	numAtts = num_atts;
-	myAtts = new Attribute[numAtts];
-	for (int i = 0; i < numAtts; i++ ) {
-		if (atts[i].myType == Int) {
-			myAtts[i].myType = Int;
-		}
-		else if (atts[i].myType == Double) {
-			myAtts[i].myType = Double;
-		}
-		else if (atts[i].myType == String) {
-			myAtts[i].myType = String;
-		} 
-		else {
-			cout << "Bad attribute type for " << atts[i].myType << "\n";
-			delete [] myAtts;
-			exit (1);
-		}
-		myAtts[i].name = strdup (atts[i].name);
-	}
-}
-
 Schema :: Schema (char *fName, char *relName) {
+	this->relName = relName;
 
 	FILE *foo = fopen (fName, "r");
 	
+
+
 	// this is enough space to hold any tokens
 	char space[200];
-
 	fscanf (foo, "%s", space);
+
 	int totscans = 1;
+
 
 	// see if the file starts with the correct keyword
 	if (strcmp (space, "BEGIN")) {
@@ -76,6 +61,7 @@ Schema :: Schema (char *fName, char *relName) {
 		exit (1);
 	}	
 		
+
 	while (1) {
 
 		// check to see if this is the one we want
@@ -106,7 +92,7 @@ Schema :: Schema (char *fName, char *relName) {
 
 	// suck in the file name
 	fscanf (foo, "%s", space);
-	totscans++;
+	totscans++; // record the line numbers before the info we want
 	fileName = strdup (space);
 
 	// count the number of attributes specified
@@ -152,9 +138,11 @@ Schema :: Schema (char *fName, char *relName) {
 		}
 	}
 
+	cout<<"cata done"<<endl;
 	fclose (foo);
 }
 
+//memory problem?
 Schema :: ~Schema () {
 	delete [] myAtts;
 	myAtts = 0;

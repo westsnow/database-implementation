@@ -10,12 +10,10 @@
 #define FALSE 0
 
 GeneralDBFile::GeneralDBFile(){
-	printf("base con is called\n");
 	page_number = 0;
 }
 
 GeneralDBFile::~GeneralDBFile(){
-	printf("base decon is called\n");
 }
 //Heap
 Heap::Heap(): GeneralDBFile(){

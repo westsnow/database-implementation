@@ -39,21 +39,15 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     OR = 258,
-     AND = 259,
-     Name = 260,
-     String = 261,
-     Float = 262,
-     Int = 263
+     Name = 258,
+     Float = 259,
+     Int = 260
    };
 #endif
 /* Tokens.  */
-#define OR 258
-#define AND 259
-#define Name 260
-#define String 261
-#define Float 262
-#define Int 263
+#define Name 258
+#define Float 259
+#define Int 260
 
 
 
@@ -62,14 +56,13 @@
 typedef union YYSTYPE
 #line 20 "./source/Parser.y"
 {
- 	struct Operand *myOperand;
-	struct ComparisonOp *myComparison; 
-  	struct OrList *myOrList;
-  	struct AndList *myAndList;
+ 	struct FuncOperand *myOperand;
+	struct FuncOperator *myOperator; 
 	char *actualChars;
+	char whichOne;
 }
 /* Line 1529 of yacc.c.  */
-#line 73 "./source/y.tab.h"
+#line 66 "./source/y.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
