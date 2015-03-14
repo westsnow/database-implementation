@@ -30,12 +30,15 @@ OBJ_FILES = $(addprefix $(BIN), $(LIST))
 gtest: $(OBJ_FILES) $(GOBJ_FILES) $(BIN)gtest.o 
 	$(CC) -o $(BIN)$@ $(OBJ_FILES) $(GOBJ_FILES) $(BIN)gtest.o -I$(GoogleTestDir)/include -L$(GoogleTestDir)/lib -lgtest -lpthread
 
-test: test-1 test-2
+test: test-1 test-2-1 test-2-2
 
-test-1: $(OBJ_FILES) $(BIN)test-2-1.o
+test-1: $(OBJ_FILES) $(BIN)test-1.o
+	$(CC) -o $(BIN)$@ $(OBJ_FILES) ./bin/test-1.o $(llflag) -lpthread
+
+test-2-1: $(OBJ_FILES) $(BIN)test-2-1.o
 	$(CC) -o $(BIN)$@ $(OBJ_FILES) ./bin/test-2-1.o $(llflag) -lpthread
 
-test-2: $(OBJ_FILES) $(BIN)test-2-2.o
+test-2-2: $(OBJ_FILES) $(BIN)test-2-2.o
 	$(CC) -o $(BIN)$@ $(OBJ_FILES) ./bin/test-2-2.o $(llflag) -lpthread
 
 main: $(OBJ_FILES) $(BIN)main.o
