@@ -5,9 +5,13 @@
 #include "DBFile.h"
 #include "Record.h"
 #include "Function.h"
+#include <pthread.h>
 
 class RelationalOp {
-	public:
+
+
+
+public:
 	// blocks the caller until the particular relational operator 
 	// has run to completion
 	virtual void WaitUntilDone () = 0;
@@ -18,11 +22,15 @@ class RelationalOp {
 
 class SelectFile : public RelationalOp { 
 
-	private:
-	// pthread_t thread;
-	// Record *buffer;
+private:
+	 pthread_t worker_thread;
+	 Record *buffer;
 
-	public:
+	 Pipe &outPipe;
+	 CNF &selOp;
+	 Record &literal;
+	 DBFile inFile;
+public:
 
 	void Run (DBFile &inFile, Pipe &outPipe, CNF &selOp, Record &literal);
 	void WaitUntilDone ();
@@ -31,10 +39,22 @@ class SelectFile : public RelationalOp {
 };
 
 class SelectPipe : public RelationalOp {
-	public:
-	void Run (Pipe &inPipe, Pipe &outPipe, CNF &selOp, Record &literal) { }
-	void WaitUntilDone () { }
-	void Use_n_Pages (int n) { }
+
+private:
+	pthread_t worker_thread;
+	// Record *buffer;
+	Pipe &inPipe, &outPipe;
+	CNF &selOp;
+	Record &literal;
+public:
+
+
+	void Run (Pipe &inPipe, Pipe &outPipe, CNF &selOp, Record &literal);
+	void WaitUntilDone ();
+	void Use_n_Pages (int n);
+
+
+
 };
 class Project : public RelationalOp { 
 	public:

@@ -327,7 +327,7 @@ void * BigQ :: startThread(void * arg){
 
 BigQ :: BigQ (Pipe &_in, Pipe &_out, OrderMaker &_sortorder, int _runlen):
 in(_in), out(_out), sortorder(_sortorder), runlen(_runlen){
-	printf("Did i get to big q?\n");
+	//printf("Did i get to big q?\n");
 	//sortorder.Print();
 	pthread_create(&worker, NULL, &BigQ::startThread, this);
 	

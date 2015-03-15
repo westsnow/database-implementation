@@ -88,7 +88,6 @@ int Heap::Open (char *f_path) {
 }
 
 void Heap::MoveFirst () {
-	printf("mvoe first of heap is called\n");
 	page_number = 0;
 	if(opened_file.GetLength()==0)
 		return;
