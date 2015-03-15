@@ -7,6 +7,21 @@
 #include "Function.h"
 #include <pthread.h>
 
+struct SelectFileStruct{
+	DBFile *inFile;
+	Pipe *outPipe;
+	CNF *selOp;
+	Record *literal;
+};
+
+struct SelectPipeStruct{
+	Pipe *inPipe;
+	Pipe *outPipe;
+	CNF *selOp;
+	Record *literal;
+};
+
+
 class RelationalOp {
 
 
@@ -24,18 +39,12 @@ class SelectFile : public RelationalOp {
 
 private:
 	 pthread_t worker_thread;
-	 Record *buffer;
-
-	 Pipe &outPipe;
-	 CNF &selOp;
-	 Record &literal;
-	 DBFile inFile;
+	 //Record *buffer;
 public:
 
 	void Run (DBFile &inFile, Pipe &outPipe, CNF &selOp, Record &literal);
 	void WaitUntilDone ();
 	void Use_n_Pages (int n);
-
 };
 
 class SelectPipe : public RelationalOp {
@@ -43,17 +52,11 @@ class SelectPipe : public RelationalOp {
 private:
 	pthread_t worker_thread;
 	// Record *buffer;
-	Pipe &inPipe, &outPipe;
-	CNF &selOp;
-	Record &literal;
+
 public:
-
-
 	void Run (Pipe &inPipe, Pipe &outPipe, CNF &selOp, Record &literal);
 	void WaitUntilDone ();
 	void Use_n_Pages (int n);
-
-
 
 };
 class Project : public RelationalOp { 

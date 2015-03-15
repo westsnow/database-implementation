@@ -14,7 +14,7 @@ using namespace std;
 
 // test settings file should have the 
 // catalog_path, dbfile_dir and tpch_dir information in separate lines
-const char *settings = "test.cat";
+const char *settings = "/Users/Migue/Development/workspace_cpp/database-implementation/source/test_migue.cat";
 
 // donot change this information here
 char *catalog_path, *dbfile_dir, *tpch_dir = NULL;
@@ -184,7 +184,6 @@ void setup () {
 		}
 	}
 	else {
-		cerr << " Test settings files 'test.cat' missing \n";
 		exit (1);
 	}
 	cout << " \n** IMPORTANT: MAKE SURE THE INFORMATION BELOW IS CORRECT **\n";

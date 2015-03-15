@@ -612,7 +612,7 @@ DBFile::DBFile () {
 
 DBFile::~DBFile () {
 	delete generalVar;
-	printf("dbfile decon is called\n");
+	//printf("dbfile decon is called\n");
 }
 
 

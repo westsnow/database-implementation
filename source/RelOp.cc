@@ -2,23 +2,32 @@
 
 
 void* SelectFileWorkerThread(void *arg){
-	SelectFile sf = (SelectFile *) arg;
+	SelectFileStruct *sf = (SelectFileStruct *) arg;
 	Record r;
 	ComparisonEngine comp;
-	sf.inFile.MoveFirst();
+	printf("start");
+	sf->inFile->MoveFirst();
+	printf("move first");
+	while(sf->inFile->GetNext(r)){
+		if (comp.Compare(&r, sf->literal, sf->selOp)){
+			//r.Print(new Schema ("/Users/Migue/Development/workspace_cpp/database-implementation/source/catalog", "partsupp")) ;
 
-	while(sf.inFile.GetNext(r)){
-		if (comp.Compare(&r, &sf.literal, &sf.selOp)){
-					sf.outPipe.Insert(&r);
+			sf->outPipe->Insert(&r);
 		}
 	}
-	sf.outPipe.ShutDown();
+	sf->outPipe->ShutDown();
+
 }
 
-void SelectFile::Run (DBFile &_inFile, Pipe &_outPipe, CNF &_selOp, Record &_literal):
-		inFile(_inFile), outPipe(_outPipe), selOp(_selOp), literal(_literal){
+void SelectFile::Run (DBFile &inFile, Pipe &outPipe, CNF &selOp, Record &literal){
 
-	pthread_create (&worker_thread, NULL, SelectFileWorkerThread, this);
+	SelectFileStruct *sfs = new SelectFileStruct();
+
+	sfs->inFile = &inFile;
+	sfs->outPipe = &outPipe;
+	sfs->selOp = &selOp;
+	sfs->literal = &literal;
+	pthread_create (&worker_thread, NULL, SelectFileWorkerThread, (void *) sfs);
 
 }
 
@@ -32,23 +41,28 @@ void SelectFile::Use_n_Pages (int runlen) {
 }
 
 
+
 void* SelectPipeWorkerThread(void *arg){
-	SelectPipe sp = (SelectPipe *) arg;
+	SelectPipeStruct *sp = (SelectPipeStruct *) arg;
 	Record r;
 	ComparisonEngine comp;
-	while(sp.inPipe.Remove(&r)){
-		if (comp.Compare(&r, &sp.literal, &sp.selOp)){
-					sp.outPipe.Insert(&r);
+	while(sp->inPipe->Remove(&r)){
+		if (comp.Compare(&r, sp->literal, sp->selOp)){
+					sp->outPipe->Insert(&r);
 		}
 	}
-	sp.outPipe.ShutDown();
+	sp->outPipe->ShutDown();
 }
 
 
-void SelectPipe::Run (Pipe &_inPipe, Pipe &_outPipe, CNF &_selOp, Record &_literal):
-	inPipe(_inPipe), outPipe(_outPipe), selOp(_selOp), literal(_literal){
+void SelectPipe::Run (Pipe &inPipe, Pipe &outPipe, CNF &selOp, Record &literal){
+	SelectPipeStruct *sps = new SelectPipeStruct();
 
-	pthread_create (&worker_thread, NULL, SelectPipeWorkerThread, this);
+	sps->inPipe = &inPipe;
+	sps->outPipe = &outPipe;
+	sps->selOp = &selOp;
+	sps->literal = &literal;
+	pthread_create (&worker_thread, NULL, SelectPipeWorkerThread, (void *)sps);
 }
 
 void SelectPipe::WaitUntilDone () {

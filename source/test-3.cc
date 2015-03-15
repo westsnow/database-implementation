@@ -94,13 +94,15 @@ void init_SF_c (char *pred_str, int numpgs) {
 // expected output: 31 records
 void q1 () {
 
-	char *pred_ps = "(ps_supplycost < 1.03)";
+	char *pred_ps = "(ps_supplycost < 10.0)";
 	init_SF_ps (pred_ps, 100);
-
+	printf("init SF\n");
 	SF_ps.Run (dbf_ps, _ps, cnf_ps, lit_ps);
+	printf("Run SF\n");
 	SF_ps.WaitUntilDone ();
-
+	printf("Wait SF\n");
 	int cnt = clear_pipe (_ps, ps->schema (), true);
+	printf("clear SF\n");
 	cout << "\n\n query1 returned " << cnt << " records \n";
 
 	dbf_ps.Close ();
