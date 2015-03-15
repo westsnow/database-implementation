@@ -10,10 +10,12 @@
 #define FALSE 0
 
 GeneralDBFile::GeneralDBFile(){
+	printf("base con is called\n");
 	page_number = 0;
 }
 
 GeneralDBFile::~GeneralDBFile(){
+	printf("base decon is called\n");
 }
 //Heap
 Heap::Heap(): GeneralDBFile(){
@@ -239,16 +241,64 @@ int Sorted::Close () {
 int Sorted::switchToReadMode() {
 	if(state == writting){
 		state = reading;
+// 		printf("Am I still here?\n");
+// 	    si->myOrder->Print();
+/*
+printf("here\n");
+		Record temp;
+	    if(opened_file.GetLength() != 0){
+	      MoveFirst();
+	      while(GetNext(temp)){
+	        inpipe->Insert(&temp);
+	      }
+	    }
+printf("what the fuck\n");
+	    si->myOrder->Print();
+	    inpipe->ShutDown();
+	    opened_file.Close();
+	    opened_file.Open(0,cur_path);
+
+		curr_page.EmptyItOut();
+		page_number = 0;
+printf("begin to consume\n");
+		while(outpipe->Remove(&temp)){
+			printf("consume from outpipe\n");
+	      if(!curr_page.Append(&temp)){
+	        opened_file.AddPage(&curr_page, page_number++);
+	        curr_page.EmptyItOut();
+
+	        curr_page.Append(&temp);
+	      }
+	      
+	    }
+	    
+	    opened_file.AddPage(&curr_page, page_number);
+    	curr_page.EmptyItOut();
+	    delete inpipe;
+	    delete outpipe;
+	    delete bigQ;
+	    cout<<"deleted pointers"<<endl;
+
+	    inpipe = NULL;
+	    outpipe = NULL;
+	    bigQ = NULL;
+		    //close in_pipe
+	    
+	}
+*/
 
 
 		//close inpipe, then the bigq will start phase 2
 		inpipe->ShutDown();
+// printf("ShutDown done\n");
 		//do two way merge, merge records from putpipe and current dbfile into a new file.
 		//create a new file
 		File newFile;
 		char new_path[100];
 		sprintf (new_path, "%s.newFile", cur_path);
+// printf("before open\n");
 		newFile.Open(0, new_path);
+// printf("new fiel opended\n");
 		//begin merging
 		Page page;
 		Record pipeRec;
@@ -257,8 +307,11 @@ int Sorted::switchToReadMode() {
 		opened_file.Close();
 		// play a little trick, treat this current file as a heap dbfile, whose interface will make life easier.
 		heapFile.Open(cur_path);
+// printf("begin to mvoe first\n");
+// printf("before\n");
 		heapFile.MoveFirst();
 		while(true){
+// printf("here\n");
 			Record* tmp = NULL;
 			if(pipeRec.isNULL())
 				outpipe->Remove (&pipeRec);
@@ -308,14 +361,19 @@ int Sorted::switchToWriteMode(){
 	if(state == reading){
 		state = writting;
 		int buffsz = 128;
+		// printf("creating new staff\n");
 		inpipe = new Pipe(buffsz);
 		outpipe = new Pipe(buffsz);
+		// printf("was I passed to bigq?\n");
+		// si->myOrder->Print();
 		bigQ = new BigQ(*inpipe, *outpipe, *(si->myOrder), si->runLength);
 	}
 	return 1;
 }
 int Sorted::Add (Record &rec) {
-
+// printf("add function is called... current state is %d\n",state );
+	// printf("before i went to switch to write mode\n");
+	// si->myOrder->Print();
 	switchToWriteMode();
 	inpipe->Insert (&rec);
 	return 1;
@@ -334,6 +392,7 @@ int Sorted::Load (Schema &f_schema, char *loadpath) {
    	while(tmp.SuckNextRecord(&f_schema, tableFile) ){
 		Add(tmp);
 	}
+	// cout<<"file has "<<opened_file.GetLength()<<" pages"<<endl;
 	return 1;
 
 }
@@ -359,6 +418,11 @@ int Sorted::GetNext (Record &fetchme) {
 
 int Sorted::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
 	
+	// check if the file is in writing mode, if yes,
+        // merge the records from the file and the pipe!
+  //   if (state = writting) {
+		// switchToReadMode();     
+  //   }
 
 	// check if the OrderMaker for the sorted file can be used to
 	// GetNext the record by evaulating the CNF passed alongwith
@@ -367,9 +431,14 @@ int Sorted::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
 	OrderMaker cnfOrder, literalOrder;
 	bool usable = cnf.GetSortOrders(*(si->myOrder), cnfOrder, literalOrder);
 
+	//cout << "CNF Order: " << endl;
+	//cnfOrder.Print();
+	//cout << "File Order: " << endl;
+	//fileOrder.Print();
 
 	// result gives the number of attributes in cnfOrder, if none,
 	// scan sequentially
+	//cout << "Result: " << usable << endl;
 	if (false == usable) {
 		// get the record pointed by the current record which satisfies
 		// the cnf passed on by the function
@@ -491,6 +560,9 @@ int Sorted::GetNext (Record &fetchme, CNF &cnf, Record &literal) {
 			end = mid - 1;
 		}
 	}
+
+	//cout << "S: " << start << " E: " << end << " M: " << mid << endl;
+
 	// we need to scan the last page which we narrowed down
 	if (start > end) {
 		recFoundOnPageNum = (start - 1);

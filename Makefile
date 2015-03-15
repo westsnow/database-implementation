@@ -21,7 +21,8 @@ GSRC = ./gtest/
 GLIST = GtestLoad.o
 GOBJ_FILES = $(addprefix $(BIN), $(GLIST))
 
-LIST = Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o Pipe.o BigQ.o
+#LIST = Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o Pipe.o BigQ.o
+LIST = Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o Pipe.o BigQ.o Function.o RelOp.o 
 OBJ_FILES = $(addprefix $(BIN), $(LIST))
 
 
@@ -63,11 +64,21 @@ bin/lex.yy.o: $(SRC)Lexer.l
 	mv lex.yy.c $(SRC)lex.yy.c
 	gcc  -c $(SRC)lex.yy.c -o $@
 
+bin/lex.yyfunc.o: $(SRC)LexerFunc.l
+	lex -Pyyfunc $(SRC)LexerFunc.l
+	mv lex.yyfunc.c $(SRC)lex.yyfunc.c
+	gcc  -c $(SRC)lex.yyfunc.c -o $@
+
+bin/yyfunc.tab.o: $(SRC)ParserFunc.y
+	#yacc -d $(SRC)ParserFunc.y -o $(SRC)yyfunc.tab.c
+	yacc -p "yyfunc" -b "yyfunc" -d $(SRC)ParserFunc.y -o $(SRC)yyfunc.tab.c
+	g++ -c $(SRC)yyfunc.tab.c -o $@
+
 clean: 
 	rm -f $(BIN)*
-	rm -f $(SRC)y.tab.c
-	rm -f $(SRC)lex.yy.c
-	rm -f $(SRC)y.tab.h
+	rm -f $(SRC)*tab.c
+	rm -f $(SRC)lex.*
+	rm -f $(SRC)*tab.h
 	rm -f ./data/testTable
 	rm -f ./data/itemTable
 	rm -f ./data/caritem
