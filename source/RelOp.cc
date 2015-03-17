@@ -19,32 +19,6 @@ void* SelectFileWorkerThread(void *arg){
 
 }
 
-void* DuplicateRemovalThread(void *arg){
-
-	DuplicateRemovalStruct *drs = (DuplicateRemovalStruct *) arg;
-	Record *previous = NULL;
-	Record *record;
-	ComparisonEngine comp;
-
-	BigQ bigQ( *(drs->inPipe), *(drs->tmpPipe), *(drs->orderMaker), drs->runLength);
-
-	while(drs->tmpPipe->Remove(record)){
-		// comp.Compare(previous, record,  drs->orderMaker) != 0 
-		if(previous == NULL ){
-			previous = record;
-		}
-		// find a different record
-		if( comp.Compare(previous, record,  drs->orderMaker) != 0 ){
-			drs->outPipe->Insert(previous);
-			previous = record;
-		}
-	}
-	if(previous!=NULL)
-		drs->outPipe->Insert(previous);
-	drs->outPipe->ShutDown();
-}
-
-
 void RelationalOp::WaitUntilDone () {
 	pthread_join (worker_thread, NULL);
 }
@@ -95,17 +69,48 @@ void SelectPipe::Use_n_Pages (int runlen) {
 
 }
 
+void* DuplicateRemovalThread(void *arg){
+
+	DuplicateRemovalStruct *drs = (DuplicateRemovalStruct *) arg;
+
+	ComparisonEngine comp;
+	OrderMaker *order = new OrderMaker(drs->schema);
+	Pipe tmp(100);
+
+
+	BigQ bigQ( *(drs->inPipe), tmp, *(order), 10);
+
+	Record *record = new Record();
+	Record *previous = new Record();
+	previous = NULL;
+
+	while(tmp.Remove(record)){
+		count1++;
+		// record->Print(drs->schema);
+		// comp.Compare(previous, record,  drs->orderMaker) != 0 
+		if(previous == NULL ){
+			previous = new Record();
+			previous->Copy(record);
+		}
+		if( comp.Compare(previous, record,  order) != 0 ){
+			drs->outPipe->Insert(previous);
+			count2++;
+			previous->Copy(record);
+		}
+	}
+
+	if(!previous->isNULL())
+		drs->outPipe->Insert(previous);
+	drs->outPipe->ShutDown();
+}
+
+
 void DuplicateRemoval::Run (Pipe &inPipe, Pipe &outPipe, Schema &mySchema){
 	DuplicateRemovalStruct *drs = new DuplicateRemovalStruct();
-	Pipe *tmp = new Pipe(128);
-	OrderMaker *order = new OrderMaker(&mySchema);
-
 
 	drs->inPipe = &inPipe;
-	drs->tmpPipe = tmp;
 	drs->outPipe = &outPipe;
-	drs->orderMaker = order;
-	drs->runLength = 10;
+	drs->schema = &mySchema;
 
 	pthread_create (&worker_thread, NULL, DuplicateRemovalThread, (void *)drs);
 }

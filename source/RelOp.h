@@ -23,10 +23,8 @@ struct SelectPipeStruct{
 
 struct DuplicateRemovalStruct{
 	Pipe *inPipe;
-	Pipe *tmpPipe;
 	Pipe *outPipe;
-	OrderMaker *orderMaker;
-	int runLength;
+	Schema *schema;
 };
 
 struct WriteOutStruct{
