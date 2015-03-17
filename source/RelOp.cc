@@ -153,3 +153,41 @@ void WriteOut::Run (Pipe &inPipe, FILE *outFile, Schema &mySchema){
 	pthread_create (&worker_thread, NULL, WriteOutWorkerThread, (void *)wos);
 }
 
+
+/*
+	
+	PROJECT METHODS
+
+*/
+
+void* ProjectWorkerThread(void *arg){
+	
+	ProjectStruct *ps = (ProjectStruct *) arg;
+	Record r;
+	ComparisonEngine comp;
+	printf("Project worked started \n");	
+	while(ps->inPipe->Remove(&r)){
+		
+		r.Project(ps->keepMe, ps->numAttsOutput, ps->numAttsInput);
+		ps->outPipe->Insert(&r);
+	}
+	ps->outPipe->ShutDown();
+}
+
+
+void Project::Run (Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, int numAttsOutput){
+	
+	ProjectStruct *ps = new ProjectStruct();
+	ps->inPipe = &inPipe;
+	ps->outPipe = &outPipe;
+	ps->keepMe = keepMe;
+	ps->numAttsInput = numAttsInput;
+	ps->numAttsOutput = numAttsOutput;
+
+	pthread_create (&worker_thread, NULL, ProjectWorkerThread, (void *)ps);
+}
+
+void Project::Use_n_Pages (int runlen) {
+
+}
+
