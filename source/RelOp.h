@@ -21,6 +21,20 @@ struct SelectPipeStruct{
 	Record *literal;
 };
 
+struct DuplicateRemovalStruct{
+	Pipe *inPipe;
+	Pipe *tmpPipe;
+	Pipe *outPipe;
+	OrderMaker *orderMaker;
+	int runLength;
+};
+
+struct WriteOutStruct{
+	Pipe *inPipe;
+	FILE *file;
+	Schema *schema;
+};
+
 
 class RelationalOp {
 protected:
@@ -56,7 +70,7 @@ public:
 
 
 class Project : public RelationalOp { 
-	public:
+public:
 	void Run (Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, int numAttsOutput) { }
 	void WaitUntilDone () { }
 	void Use_n_Pages (int n) { }
@@ -68,9 +82,8 @@ class Join : public RelationalOp {
 	void Use_n_Pages (int n) { }
 };
 class DuplicateRemoval : public RelationalOp {
-	public:
-	void Run (Pipe &inPipe, Pipe &outPipe, Schema &mySchema) { }
-	void WaitUntilDone () { }
+public:
+	void Run (Pipe &inPipe, Pipe &outPipe, Schema &mySchema);
 	void Use_n_Pages (int n) { }
 };
 class Sum : public RelationalOp {
@@ -87,8 +100,7 @@ class GroupBy : public RelationalOp {
 };
 class WriteOut : public RelationalOp {
 	public:
-	void Run (Pipe &inPipe, FILE *outFile, Schema &mySchema) { }
-	void WaitUntilDone () { }
+	void Run (Pipe &inPipe, FILE *outFile, Schema &mySchema);
 	void Use_n_Pages (int n) { }
 };
 #endif

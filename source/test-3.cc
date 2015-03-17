@@ -219,7 +219,7 @@ void q4 () {
 // select distinct ps_suppkey from partsupp where ps_supplycost < 100.11;
 // expected output: 9996 rows
 void q5 () {
-
+printf("test distinct\n");
 	char *pred_ps = "(ps_supplycost < 100.11)";
 	init_SF_ps (pred_ps, 100);
 
