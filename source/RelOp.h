@@ -23,42 +23,38 @@ struct SelectPipeStruct{
 
 
 class RelationalOp {
-
-
-
+protected:
+	pthread_t worker_thread;
 public:
 	// blocks the caller until the particular relational operator 
 	// has run to completion
-	virtual void WaitUntilDone () = 0;
+	virtual void WaitUntilDone ();
 
 	// tell us how much internal memory the operation can use
 	virtual void Use_n_Pages (int n) = 0;
 };
 
-class SelectFile : public RelationalOp { 
 
-private:
-	 pthread_t worker_thread;
+class SelectFile : public RelationalOp { 
 	 //Record *buffer;
 public:
 
 	void Run (DBFile &inFile, Pipe &outPipe, CNF &selOp, Record &literal);
-	void WaitUntilDone ();
 	void Use_n_Pages (int n);
 };
+
 
 class SelectPipe : public RelationalOp {
 
 private:
 	pthread_t worker_thread;
-	// Record *buffer;
 
 public:
 	void Run (Pipe &inPipe, Pipe &outPipe, CNF &selOp, Record &literal);
-	void WaitUntilDone ();
 	void Use_n_Pages (int n);
-
 };
+
+
 class Project : public RelationalOp { 
 	public:
 	void Run (Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, int numAttsOutput) { }

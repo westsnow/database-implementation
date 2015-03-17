@@ -19,6 +19,11 @@ void* SelectFileWorkerThread(void *arg){
 
 }
 
+
+void RelationalOp::WaitUntilDone () {
+	pthread_join (worker_thread, NULL);
+}
+
 void SelectFile::Run (DBFile &inFile, Pipe &outPipe, CNF &selOp, Record &literal){
 
 	SelectFileStruct *sfs = new SelectFileStruct();
@@ -31,10 +36,6 @@ void SelectFile::Run (DBFile &inFile, Pipe &outPipe, CNF &selOp, Record &literal
 
 }
 
-
-void SelectFile::WaitUntilDone () {
-	pthread_join (worker_thread, NULL);
-}
 
 void SelectFile::Use_n_Pages (int runlen) {
 
@@ -63,10 +64,6 @@ void SelectPipe::Run (Pipe &inPipe, Pipe &outPipe, CNF &selOp, Record &literal){
 	sps->selOp = &selOp;
 	sps->literal = &literal;
 	pthread_create (&worker_thread, NULL, SelectPipeWorkerThread, (void *)sps);
-}
-
-void SelectPipe::WaitUntilDone () {
-	pthread_join (worker_thread, NULL);
 }
 
 void SelectPipe::Use_n_Pages (int runlen) {
