@@ -68,6 +68,9 @@ public:
 	// prints the contents of the record; this requires
 	// that the schema also be given so that the record can be interpreted
 	void Print (Schema *mySchema);
+
+	int ComposeRecord (Schema *mySchema, const char *src);
+
 };
 
 #endif

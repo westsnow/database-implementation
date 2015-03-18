@@ -52,6 +52,14 @@ struct JoinStruct
 	Record *literal;
 };
 
+struct SumStruct{
+
+	Pipe *inPipe;
+	Pipe *outPipe;
+	Function *computeMe;	
+
+};
+
 class RelationalOp {
 protected:
 	pthread_t worker_thread;
@@ -102,8 +110,8 @@ public:
 };
 class Sum : public RelationalOp {
 	public:
-	void Run (Pipe &inPipe, Pipe &outPipe, Function &computeMe) { }
-	void WaitUntilDone () { }
+	void Run (Pipe &inPipe, Pipe &outPipe, Function &computeMe);
+	//void WaitUntilDone () { }
 	void Use_n_Pages (int n) { }
 };
 class GroupBy : public RelationalOp {

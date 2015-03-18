@@ -309,5 +309,55 @@ void Join::Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record 
 	pthread_create(&worker_thread, NULL, JoinWorkerThread, (void*)js);
 }
 
+/*
+	
+		SUM METHODS
+
+*/
+
+void* SumWorkerThread(void *arg){
+	Attribute DA = {"double", Double};
+
+	SumStruct *ss = (SumStruct *) arg;
+	double result_doble = 0.0;
+	int result_int = 0;
+	Record r;
+	Type t;
+	while(ss->inPipe->Remove(&r)){
+		double inner_result_double;
+		int inner_result_int;
+		t = ss->computeMe->Apply(r, inner_result_int, inner_result_double);
+		if (Int == t)
+			result_int += inner_result_int;
+		else
+			result_doble += inner_result_double;
+
+	}
+	
+	char String[20];
+	if(t == Int){
+		 sprintf(String,"%d|", result_int);
+	}else{
+		 sprintf(String,"%d|", result_doble);		
+	}
+	Attribute at = {"double", Double};
+
+	Schema sum_sch ("sum_sch", 1, &at);
+	Record r2;
+	r2.ComposeRecord(&sum_sch, String);
+	ss->outPipe->Insert(&r2);
+	ss->outPipe->ShutDown();
+}
+
+
+void Sum::Run (Pipe &inPipe, Pipe &outPipe, Function &computeMe){
+	
+	SumStruct *ss = new SumStruct();
+	ss->inPipe = &inPipe;
+	ss->outPipe = &outPipe;
+	ss->computeMe = &computeMe;
+
+	pthread_create (&worker_thread, NULL, SumWorkerThread, (void *)ss);
+}
 
 
