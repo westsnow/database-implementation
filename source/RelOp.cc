@@ -1,5 +1,6 @@
 #include "RelOp.h"
 
+using namespace std;
 
 void* SelectFileWorkerThread(void *arg){
 	SelectFileStruct *sf = (SelectFileStruct *) arg;
@@ -85,7 +86,6 @@ void* DuplicateRemovalThread(void *arg){
 	previous = NULL;
 
 	while(tmp.Remove(record)){
-		count1++;
 		// record->Print(drs->schema);
 		// comp.Compare(previous, record,  drs->orderMaker) != 0 
 		if(previous == NULL ){
@@ -94,7 +94,6 @@ void* DuplicateRemovalThread(void *arg){
 		}
 		if( comp.Compare(previous, record,  order) != 0 ){
 			drs->outPipe->Insert(previous);
-			count2++;
 			previous->Copy(record);
 		}
 	}
@@ -195,4 +194,120 @@ void Project::Run (Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, i
 void Project::Use_n_Pages (int runlen) {
 
 }
+
+//take two records, merge them , then insert into pipe
+void mergeRecordsIntoPipe(Record& record1, Record& record2, Pipe* pipe){
+	Record mergeRec;
+	int numAttsLeft = ((((int*)(record1.bits))[1])/sizeof(int)) - 1;
+	int numAttsRight = ((((int*)(record2.bits))[1])/sizeof(int)) - 1;
+	int numAttsToKeep = numAttsLeft + numAttsRight;
+	int attsToKeep[numAttsToKeep];
+	int i;
+	for(i = 0; i < numAttsLeft; i++) {
+	    attsToKeep[i] = i;
+	}
+	int startOfRight = i;
+	for(int j = 0; j < numAttsRight; j++,i++) {
+	    attsToKeep[i] = j;
+	}
+	mergeRec.MergeRecords(&record1, &record2, numAttsLeft,
+	        numAttsRight, attsToKeep, numAttsToKeep, startOfRight);
+	pipe->Insert(&mergeRec);
+}
+
+void* JoinWorkerThread(void * arg){
+	int runLen = 10;
+	JoinStruct *js = (JoinStruct *) arg;
+	OrderMaker leftorder;
+	OrderMaker rightorder;
+	ComparisonEngine comp;
+
+	//perform merge-sort join
+	if( js->cnf->GetSortOrders(leftorder, rightorder) != 0 ){
+		Pipe leftPipe(100);
+		Pipe rightPipe(100);
+
+		BigQ bigQ1( *(js->inPipeL), leftPipe, leftorder, runLen);
+		BigQ bigQ2( *(js->inPipeR), rightPipe, rightorder, runLen);
+
+		Record left;
+		Record right;
+
+		leftPipe.Remove(&left);
+		rightPipe.Remove(&right);
+
+		bool leftPipeAlive = leftPipe.Remove(&left);
+		bool rightPipeAlive = rightPipe.Remove(&right);
+
+		while( leftPipeAlive && rightPipeAlive ){
+			int res = comp.Compare(&left, &leftorder, &right, &rightorder);
+			//left < right
+			if( res == -1){
+				if(leftPipe.Remove(&left))
+					continue;
+				else
+					leftPipeAlive = false;
+			}else if(res == 1){
+				if(rightPipe.Remove(&right))
+					continue;
+				else
+					rightPipeAlive = false;
+			}else{
+				//mergeRecordsIntoPipe(left, right, js->outPipe);
+				vector<Record*> leftRecs;
+				Record *tmpRec = new Record();
+				tmpRec->Copy(&left);
+				leftRecs.push_back(tmpRec);
+				//put every record in leftPipe with the same attribute values into vector
+				while(true){
+					if( !leftPipe.Remove(&left) ){
+						leftPipeAlive = false;
+						break;
+					}
+					if( comp.Compare(&left, &leftorder, &right, &rightorder) == 0 ){
+						Record *tmpRec2 = new Record();
+						tmpRec2->Copy(&left);
+						leftRecs.push_back(tmpRec2);
+					}else{
+						break;
+					}
+				}
+				while( true ){
+					for(int i = 0; i < leftRecs.size(); ++i){
+						mergeRecordsIntoPipe( *(leftRecs[i]), right, js->outPipe);
+					}
+					if( !rightPipe.Remove(&right) ){
+						rightPipeAlive = false;
+						break;
+					}
+					if( comp.Compare(leftRecs[0], &leftorder, &right, &rightorder) != 0 ){
+						break;
+					}
+				}
+			}
+		}
+		if( !left.isNULL() && !right.isNULL() && comp.Compare(&left, &leftorder, &right, &rightorder) == 0){
+			mergeRecordsIntoPipe( left, right, js->outPipe);
+		}
+	}
+}
+
+// takes two input records and creates a new record by concatenating them;
+	// this is useful for a join operation
+	void MergeRecords (Record *left, Record *right, int numAttsLeft, 
+		int numAttsRight, int *attsToKeep, int numAttsToKeep, int startOfRight);
+
+
+void Join::Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record &literal){
+	JoinStruct *js = new JoinStruct();
+	js->inPipeL = &inPipeL;
+	js->inPipeR = &inPipeR;
+	js->outPipe = &outPipe;
+	js->cnf = &selOp;
+	js->literal = &literal;
+
+	pthread_create(&worker_thread, NULL, JoinWorkerThread, (void*)js);
+}
+
+
 

@@ -6,6 +6,7 @@
 #include "Record.h"
 #include "Function.h"
 #include <pthread.h>
+#include <vector>
 
 struct SelectFileStruct{
 	DBFile *inFile;
@@ -40,8 +41,16 @@ struct ProjectStruct{
 	int numAttsInput;
 	int numAttsOutput;
 };
+//	void Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record &literal)
 
-
+struct JoinStruct
+{
+	Pipe *inPipeL;
+	Pipe *inPipeR;
+	Pipe *outPipe;
+	CNF *cnf;
+	Record *literal;
+};
 
 class RelationalOp {
 protected:
@@ -79,13 +88,11 @@ public:
 class Project : public RelationalOp { 
 public:
 	void Run (Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, int numAttsOutput);
-	//void WaitUntilDone () { }
 	void Use_n_Pages (int n);
 };
 class Join : public RelationalOp { 
 	public:
-	void Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record &literal) { }
-	void WaitUntilDone () { }
+	void Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record &literal);
 	void Use_n_Pages (int n) { }
 };
 class DuplicateRemoval : public RelationalOp {
