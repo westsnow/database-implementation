@@ -4,7 +4,7 @@ using namespace std;
 
 ComparisonEngine 	ceng;
 
-std::vector<int> pageCount;
+//std::vector<int> pageCount;
 
 void swap(std::vector<Record*> &run, int i, int j){
 	if(i == j)
@@ -137,7 +137,7 @@ void* consumeInnerPipe (void *arg) {
 
 		tmpFile.Open(0, fileName );
 
-        pageCount.clear();
+        ips->pageCount->clear();
         int recordNum = 0;
         int pageNum = 1;
 
@@ -152,14 +152,14 @@ void* consumeInnerPipe (void *arg) {
                 }else{
                         recordNum++;
                 }
-                if(recordNum == (*recordCount)[pageCount.size()]){
+                if(recordNum == (*recordCount)[ips->pageCount->size()]){
                         recordNum = 0;
                         if( !page.isEmpty() ){
                                 //pageNum++;
                                 tmpFile.AddPageToEnd(&page);
                                 page.EmptyItOut();
                         }
-                        pageCount.push_back(pageNum);
+                        ips->pageCount->push_back(pageNum);
 
                         pageNum = 1;
                 }
@@ -185,12 +185,14 @@ void* WorkerThread(void * arg)	{
 	Pipe innerPipe (buffsz);
 
 	std::vector<int> recordCount;
+	std::vector<int> pageCount;
+
 
 	InnerPipeStruct *ips = new InnerPipeStruct();
 	ips->pipe = &innerPipe;
 	ips->fileName = fileName;
 	ips->recordCount = &recordCount;
-	
+	ips->pageCount = &pageCount;
 
 	pthread_t thread1;
 	pthread_create (&thread1, NULL, consumeInnerPipe, (void *)ips);

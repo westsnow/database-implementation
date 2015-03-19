@@ -396,4 +396,148 @@ void Sum::Run (Pipe &inPipe, Pipe &outPipe, Function &computeMe){
 	pthread_create (&worker_thread, NULL, SumWorkerThread, (void *)ss);
 }
 
+/*
+	
+	GROUP BY METHODS
+
+*/
+
+void* GroupByWorkerThread(void *arg){
+	GroupByStruct *gbs = (GroupByStruct *) arg;
+	Pipe *tempPipe = new Pipe(gbs->runLen);
+	BigQ bigQ( *(gbs->inPipe), *(tempPipe), *(gbs->groupAtts), gbs->runLen);
+	Record r;
+	Record *prev = new Record();
+	ComparisonEngine comp;
+	int result_int = 0;
+	double result_doble = 0.0;
+	Type t;
+
+	while(tempPipe->Remove(&r)){
+
+		if(!prev->isNULL()){
+			if(comp.Compare(prev, &r, gbs->groupAtts) != 0){
+
+				Attribute at;
+				at.name = "SUM";
+				char String[20];
+				if(t == Int){
+					printf(String,"%d|", result_int);
+					at.myType = Double;
+				}else{
+					sprintf(String,"%f|", result_doble);
+					at.myType = Double;
+				}
+				
+				Schema sum_sch ("sum_sch", 1, &at);
+				Record r2;
+				r2.ComposeRecord(&sum_sch, String);
+				
+				//Not quite yet
+				int numAttsNow = ((((int*)(prev->bits))[1])/sizeof(int)) - 1;
+				
+				prev->Project(gbs->groupAtts->whichAtts, gbs->groupAtts->numAtts, numAttsNow);
+				
+				
+				//Attribute DA = {"double", Double};
+				
+
+
+				int attsToKeep[gbs->groupAtts->numAtts + 1];
+				int i = 1;
+				attsToKeep[0] = 0;
+				for(int j=0;j<gbs->groupAtts->numAtts;j++){
+					attsToKeep[i] = j;
+					i += 1;
+				}
+
+				
+
+				Record mergeRec;
+				mergeRec.MergeRecords(&r2, prev, 1, gbs->groupAtts->numAtts, attsToKeep, gbs->groupAtts->numAtts + 1, 1);
+				
+				//Now we are ready
+				gbs->outPipe->Insert(&mergeRec);
+
+				result_int = 0;
+				result_doble = 0.0;
+				
+			}
+
+		}	
+
+		double inner_result_double;
+		int inner_result_int;
+		t = gbs->computeMe->Apply(r, inner_result_int, inner_result_double);
+		if (Int == t)
+			result_int += inner_result_int;
+		else
+			result_doble += inner_result_double;
+
+		prev->Copy(&r);
+
+	}
+
+
+	if(!prev->isNULL()){
+		Attribute at;
+		at.name = "SUM";
+		char String[20];
+		if(t == Int){
+			printf(String,"%d|", result_int);
+			at.myType = Double;
+		}else{
+			sprintf(String,"%f|", result_doble);
+			at.myType = Double;
+		}
+		
+		Schema sum_sch ("sum_sch", 1, &at);
+		Record r2;
+		r2.ComposeRecord(&sum_sch, String);
+		
+		//Not quite yet
+		int numAttsNow = ((((int*)(prev->bits))[1])/sizeof(int)) - 1;
+		prev->Project(gbs->groupAtts->whichAtts, gbs->groupAtts->numAtts, numAttsNow);
+		
+		int attsToKeep[gbs->groupAtts->numAtts + 1];
+		int i = 1;
+		attsToKeep[0] = 0;
+		for(int j=0;j<gbs->groupAtts->numAtts;j++){
+			attsToKeep[i] = j;
+			i += 1;
+		}
+		Record mergeRec;
+		mergeRec.MergeRecords(&r2, prev, 1, gbs->groupAtts->numAtts, attsToKeep, gbs->groupAtts->numAtts + 1, 1);
+		
+		//Now we are ready
+		gbs->outPipe->Insert(&mergeRec);
+
+	}
+
+	gbs->outPipe->ShutDown();
+}
+
+
+void GroupBy::Run (Pipe &inPipe, Pipe &outPipe, OrderMaker &groupAtts, Function &computeMe){
+	
+	GroupByStruct *gbs = new GroupByStruct();
+	gbs->inPipe = &inPipe;
+	gbs->outPipe = &outPipe;
+	gbs->groupAtts = &groupAtts;
+	gbs->computeMe = &computeMe;
+	gbs->runLen = this->runLen;
+	
+	pthread_create (&worker_thread, NULL, GroupByWorkerThread, (void *)gbs);
+}
+
+void GroupBy::Use_n_Pages (int runlen) {
+	this->runLen = runlen;
+}
+
+
+
+
+
+
+
 
