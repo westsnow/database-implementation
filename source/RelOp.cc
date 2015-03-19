@@ -1,6 +1,8 @@
 #include "RelOp.h"
 
 using namespace std;
+int countI = 0;
+
 
 void* SelectFileWorkerThread(void *arg){
 	SelectFileStruct *sf = (SelectFileStruct *) arg;
@@ -221,32 +223,57 @@ void* JoinWorkerThread(void * arg){
 	OrderMaker leftorder;
 	OrderMaker rightorder;
 	ComparisonEngine comp;
+	
+	// Schema ps("/Users/westsnow/Documents/DBIDATA/catalog", "partsupp");
+	// Schema s("/Users/westsnow/Documents/DBIDATA/catalog", "supplier");
+
+
+	Record left;
+	Record right;
 
 	//perform merge-sort join
 	if( js->cnf->GetSortOrders(leftorder, rightorder) != 0 ){
 		Pipe leftPipe(100);
 		Pipe rightPipe(100);
-
+		
 		BigQ bigQ1( *(js->inPipeL), leftPipe, leftorder, runLen);
 		BigQ bigQ2( *(js->inPipeR), rightPipe, rightorder, runLen);
 
-		Record left;
-		Record right;
 
-		leftPipe.Remove(&left);
-		rightPipe.Remove(&right);
+		
+
+		// printf("left info\n");
+		// while(leftPipe.Remove(&left)){
+		// 	left.Print(&s);
+		// }
+		// printf("right info\n");
+		// while(rightPipe.Remove(&right)){
+		// 	right.Print(&ps);
+		// }
 
 		bool leftPipeAlive = leftPipe.Remove(&left);
 		bool rightPipeAlive = rightPipe.Remove(&right);
+		
+		// bool leftPipeAlive = true;
+		// bool rightPipeAlive = true;
 
+		// bool leftPipeAlive = js->inPipeL->Remove(&left);
+		// bool rightPipeAlive  = js->inPipeR->Remove(&right);
+
+		// left.Print(&s);
+		// right.Print(&ps);
+		
+		//left  1 2 3
+		//right 2 3
 		while( leftPipeAlive && rightPipeAlive ){
 			int res = comp.Compare(&left, &leftorder, &right, &rightorder);
 			//left < right
 			if( res == -1){
 				if(leftPipe.Remove(&left))
 					continue;
-				else
+				else{
 					leftPipeAlive = false;
+				}
 			}else if(res == 1){
 				if(rightPipe.Remove(&right))
 					continue;
@@ -286,19 +313,28 @@ void* JoinWorkerThread(void * arg){
 				}
 			}
 		}
-		if( !left.isNULL() && !right.isNULL() && comp.Compare(&left, &leftorder, &right, &rightorder) == 0){
-			mergeRecordsIntoPipe( left, right, js->outPipe);
-		}
+		// if( !left.isNULL() && !right.isNULL() && comp.Compare(&left, &leftorder, &right, &rightorder) == 0){
+		// 	mergeRecordsIntoPipe( left, right, js->outPipe);
+		// }
+	}else{
 	}
+	js->outPipe->ShutDown();
 }
-
-// takes two input records and creates a new record by concatenating them;
-	// this is useful for a join operation
-	void MergeRecords (Record *left, Record *right, int numAttsLeft, 
-		int numAttsRight, int *attsToKeep, int numAttsToKeep, int startOfRight);
 
 
 void Join::Run (Pipe &inPipeL, Pipe &inPipeR, Pipe &outPipe, CNF &selOp, Record &literal){
+	// Schema ps("/Users/westsnow/Documents/DBIDATA/catalog", "partsupp");
+	// Schema s("/Users/westsnow/Documents/DBIDATA/catalog", "supplier");
+	// Record r;
+	// while(inPipeL.Remove(&r)){
+	// 	r.Print(&s);
+	// }
+	// while(inPipeR.Remove(&r)){
+	// 	r.Print(&ps);
+	// }
+
+
+
 	JoinStruct *js = new JoinStruct();
 	js->inPipeL = &inPipeL;
 	js->inPipeR = &inPipeR;
@@ -338,7 +374,7 @@ void* SumWorkerThread(void *arg){
 	if(t == Int){
 		 sprintf(String,"%d|", result_int);
 	}else{
-		 sprintf(String,"%d|", result_doble);		
+		 sprintf(String,"%f|", result_doble);		
 	}
 	Attribute at = {"double", Double};
 
