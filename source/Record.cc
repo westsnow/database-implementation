@@ -17,6 +17,13 @@ Record :: ~Record () {
 	bits = NULL;
 }
 
+int Record :: numOfAttInRecord()
+{
+		int att2 = *((int*)bits +1);
+		return ((att2 - sizeof(int))/sizeof(int));
+}
+
+
 int Record :: ComposeRecord (Schema *mySchema, const char *src) {
 
 	// this is temporary storage

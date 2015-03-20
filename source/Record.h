@@ -71,6 +71,9 @@ public:
 
 	int ComposeRecord (Schema *mySchema, const char *src);
 
+	int numOfAttInRecord();
+
+
 };
 
 #endif

@@ -217,6 +217,53 @@ void mergeRecordsIntoPipe(Record& record1, Record& record2, Pipe* pipe){
 	pipe->Insert(&mergeRec);
 }
 
+
+void nestedJoin(Pipe* inPipeL, Pipe* inPipeR, Pipe* outPipe){
+	//cout<<"Inside Nested Join START"<<endl;
+	ComparisonEngine comp;
+	Record lRecord, rRecord;
+	DBFile temp;
+	temp.Create("jointemp.bin", heap, NULL );
+	inPipeR->Remove(&rRecord);
+	inPipeL->Remove(&lRecord);
+
+	// Get the parameters for the merge record functions
+	int numAttsLeft     =  lRecord.numOfAttInRecord();
+	int numAttsRight    =  rRecord.numOfAttInRecord();
+	int numAttsToKeep   =  numAttsLeft + numAttsRight;
+	int* attsToKeep     =  new int[numAttsToKeep];
+
+	for(int i =0;i<numAttsLeft;i++)
+		attsToKeep[i] = i;
+	int startOfRight = numAttsLeft;
+	for(int i=numAttsLeft; i<(numAttsRight+numAttsLeft);i++)
+		attsToKeep[i] = i-numAttsLeft;
+
+	// Write the records of right pipe to a DBfile
+	do{
+		temp.Add(rRecord);
+	}while(inPipeR->Remove(&rRecord));
+	temp.MoveFirst();
+
+	// Now do the nested join
+	do{
+		while( temp.GetNext(rRecord)){
+			mergeRecordsIntoPipe(lRecord, rRecord, outPipe);
+		}
+		temp.MoveFirst();
+	}while(inPipeL->Remove( &lRecord ));
+	// Clean up
+	temp.Close();
+	remove("jointemp.bin");
+    remove("jointemp.bin.meta");
+
+    inPipeL->ShutDown();
+	inPipeR->ShutDown();
+	outPipe->ShutDown();
+	//cout<<"Inside Nested Join END"<<endl;
+}
+
+
 void* JoinWorkerThread(void * arg){
 	int runLen = 1000;
 	JoinStruct *js = (JoinStruct *) arg;
@@ -224,9 +271,6 @@ void* JoinWorkerThread(void * arg){
 	OrderMaker rightorder;
 	ComparisonEngine comp;
 	
-	// Schema ps("/Users/westsnow/Documents/DBIDATA/catalog", "partsupp");
-	// Schema s("/Users/westsnow/Documents/DBIDATA/catalog", "supplier");
-
 
 	Record left;
 	Record right;
@@ -254,17 +298,6 @@ void* JoinWorkerThread(void * arg){
 		bool leftPipeAlive = leftPipe.Remove(&left);
 		bool rightPipeAlive = rightPipe.Remove(&right);
 		
-		// bool leftPipeAlive = true;
-		// bool rightPipeAlive = true;
-
-		// bool leftPipeAlive = js->inPipeL->Remove(&left);
-		// bool rightPipeAlive  = js->inPipeR->Remove(&right);
-
-		// left.Print(&s);
-		// right.Print(&ps);
-		
-		//left  1 2 3
-		//right 2 3
 		while( leftPipeAlive && rightPipeAlive ){
 			int res = comp.Compare(&left, &leftorder, &right, &rightorder);
 			//left < right
@@ -313,12 +346,13 @@ void* JoinWorkerThread(void * arg){
 				}
 			}
 		}
+		js->outPipe->ShutDown();
 		// if( !left.isNULL() && !right.isNULL() && comp.Compare(&left, &leftorder, &right, &rightorder) == 0){
 		// 	mergeRecordsIntoPipe( left, right, js->outPipe);
 		// }
 	}else{
+		nestedJoin(js->inPipeL, js->inPipeR, js->outPipe);
 	}
-	js->outPipe->ShutDown();
 }
 
 
