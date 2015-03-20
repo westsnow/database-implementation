@@ -4,6 +4,7 @@
 #include <sstream>
 #include <iostream>
 #include <vector>
+#include <string.h>
 #include <string>
 #include "Pipe.h"
 #include "File.h"

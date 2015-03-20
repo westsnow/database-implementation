@@ -74,7 +74,7 @@ struct GroupByStruct{
 class RelationalOp {
 protected:
 	pthread_t worker_thread;
-	int runLen = 10;
+	//int runLen;
 public:
 	// blocks the caller until the particular relational operator 
 	// has run to completion
@@ -130,7 +130,7 @@ class GroupBy : public RelationalOp {
 	public:
 	void Run (Pipe &inPipe, Pipe &outPipe, OrderMaker &groupAtts, Function &computeMe);
 	//void WaitUntilDone () { }
-	void Use_n_Pages (int n);
+	void Use_n_Pages (int n){ };
 };
 class WriteOut : public RelationalOp {
 	public:

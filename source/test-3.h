@@ -14,7 +14,7 @@ using namespace std;
 
 // test settings file should have the 
 // catalog_path, dbfile_dir and tpch_dir information in separate lines
-const char *settings = "/Users/westsnow/GitHub/database-implementation/source/test.cat";
+const char *settings = "/cise/homes/shuai/database-implementation/source/test.cat";
 
 // donot change this information here
 char *catalog_path, *dbfile_dir, *tpch_dir = NULL;

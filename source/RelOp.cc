@@ -218,7 +218,7 @@ void mergeRecordsIntoPipe(Record& record1, Record& record2, Pipe* pipe){
 }
 
 void* JoinWorkerThread(void * arg){
-	int runLen = 10;
+	int runLen = 1000;
 	JoinStruct *js = (JoinStruct *) arg;
 	OrderMaker leftorder;
 	OrderMaker rightorder;
@@ -525,14 +525,11 @@ void GroupBy::Run (Pipe &inPipe, Pipe &outPipe, OrderMaker &groupAtts, Function 
 	gbs->outPipe = &outPipe;
 	gbs->groupAtts = &groupAtts;
 	gbs->computeMe = &computeMe;
-	gbs->runLen = this->runLen;
+	gbs->runLen = 1000;
 	
 	pthread_create (&worker_thread, NULL, GroupByWorkerThread, (void *)gbs);
 }
 
-void GroupBy::Use_n_Pages (int runlen) {
-	this->runLen = runlen;
-}
 
 
 
