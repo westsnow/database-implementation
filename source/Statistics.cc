@@ -61,7 +61,9 @@ void Statistics::Write(char *fromWhere){
 
 	// write
 	stat_file.open(fromWhere);
-	for (auto it = relInfo.begin(); it != relInfo.end(); ++it) // for each item in the hash map:
+	for (hash_map<char*, RelStat*>::iterator it = relInfo.begin();
+			it != relInfo.end();
+			++it) // for each item in the hash map:
 	{
 	    cout<<it->first<<endl;
 	    cout<<it->second->numTuples<<endl;
