@@ -1,7 +1,8 @@
 #ifndef STATISTICS_
 #define STATISTICS_
 #include "ParseTree.h"
-
+#include <iostream>
+#include <fstream>
 
 #ifdef __GNUC__
 #include <ext/hash_map>
