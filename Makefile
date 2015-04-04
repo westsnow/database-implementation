@@ -26,7 +26,8 @@ LIST = Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o
 OBJ_FILES = $(addprefix $(BIN), $(LIST))
 
 
-
+maintest:
+	$(CC) ./source/main.cc -o main.o
 
 gtest: $(OBJ_FILES) $(GOBJ_FILES) $(BIN)gtest.o 
 	$(CC) -o $(BIN)$@ $(OBJ_FILES) $(GOBJ_FILES) $(BIN)gtest.o -I$(GoogleTestDir)/include -L$(GoogleTestDir)/lib -lgtest -lpthread

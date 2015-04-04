@@ -3,14 +3,46 @@
 #include "ParseTree.h"
 
 
+#ifdef __GNUC__
+#include <ext/hash_map>
+#else
+#include <hash_map>
+#endif
+
+namespace std
+{
+using namespace __gnu_cxx;
+}
+
+using namespace std;
+
+class RelStat{
+public:
+	int numTuples;
+	hash_map<char*, int> attInfo;
+	RelStat(){}
+	RelStat(RelStat &copyMe){
+		numTuples = copyMe.numTuples;
+		attInfo = copyMe.attInfo;
+	}
+	RelStat& operator=(const RelStat& other){
+		numTuples = other.numTuples;
+		attInfo = other.attInfo;
+		return *this;
+	}
+};
+
+
+
 class Statistics
 {
 public:
+	hash_map<char*, RelStat*> relInfo;
 	Statistics();
 	Statistics(Statistics &copyMe);	 // Performs deep copy
 	~Statistics();
 
-
+	bool RelExists(char * relName);
 	void AddRel(char *relName, int numTuples);
 	void AddAtt(char *relName, char *attName, int numDistincts);
 	void CopyRel(char *oldName, char *newName);
