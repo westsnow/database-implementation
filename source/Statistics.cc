@@ -53,9 +53,22 @@ void Statistics::CopyRel(char *oldName, char *newName)
 	
 void Statistics::Read(char *fromWhere)
 {
+
 }
-void Statistics::Write(char *fromWhere)
-{
+void Statistics::Write(char *fromWhere){
+
+	ofstream stat_file;
+
+	// write
+	stat_file.open(fromWhere);
+	for (auto it = relInfo.begin(); it != relInfo.end(); ++it) // for each item in the hash map:
+	{
+	    cout<<it->first<<endl;
+	    cout<<it->second->numTuples<<endl;
+	}
+	stat_file<<"hey!"<<endl;
+	stat_file.close();
+
 }
 
 void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJoin)

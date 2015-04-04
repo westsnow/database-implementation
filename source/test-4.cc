@@ -1,4 +1,4 @@
-// #include "y.tab.h"
+//#include "y.tab.h"
 #include <iostream>
 #include <stdlib.h>
 #include "Statistics.h"
@@ -91,6 +91,8 @@ void q0(){
 
 	s.AddRel(relName[1],800000);
 	s.AddAtt(relName[1], "ps_suppkey", 10000);	
+
+	s.Write(fileName);
 }
 
 // void q0 (){
