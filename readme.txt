@@ -18,12 +18,10 @@ Organazation:
 4. GTestLib contains some .h and lib files that google test file may need.
 
 Run & Test my program
-1. To run the test.cc, just type "make test”, then go to ./bin -> "./test".
+1. To run the test.cc, just type "make test-3”, then do “./bin/test".
 	before running the test.cc, you need to modify the test.cc file, set the three file paths. 
 2. To run google test, type "make gtest", then go to ./bin -> ".gtest"
 	However, GTestLib can be used under OSX, if you wanna run it on linux, you need to modify line 3 and set GoogleTestDir = "your google test's lib and header file path"
 
 IMPORTANT NOTICE:
-If you met a error “segment fault”, in most case, the reason is that the test.cc file can’t locate or have no permission to the data file. Please modify lines 12-14, set the path correctly, and then make files again. (please modify the paths if things go wrong!)
-
-If you have any question about my code, feel free to contact me at hbwestsnow@gmail.com
+before compiling, you need to set the file path. You need to (1)set test.cat file and (2)go to test-3.h and modify line 17, set the path of test.cat file.

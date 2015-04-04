@@ -22,7 +22,7 @@ GLIST = GtestLoad.o
 GOBJ_FILES = $(addprefix $(BIN), $(GLIST))
 
 #LIST = Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o Pipe.o BigQ.o
-LIST = Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o Pipe.o BigQ.o Function.o RelOp.o 
+LIST = Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o Pipe.o BigQ.o Function.o RelOp.o Statistics.o 
 OBJ_FILES = $(addprefix $(BIN), $(LIST))
 
 
@@ -44,6 +44,9 @@ test-2-2: $(OBJ_FILES) $(BIN)test-2-2.o
 	
 test-3: $(OBJ_FILES) $(BIN)test-3.o
 	$(CC) -o $(BIN)$@ $(OBJ_FILES) ./bin/test-3.o $(llflag) -lpthread
+
+test-4: $(OBJ_FILES) $(BIN)test-4.o
+	$(CC) -o $(BIN)$@ $(OBJ_FILES) ./bin/test-4.o $(llflag) -lpthread
 
 main: $(OBJ_FILES) $(BIN)main.o
 	$(CC) -o $(BIN)$@ $(OBJ_FILES) ./bin/main.o $(llflag)
