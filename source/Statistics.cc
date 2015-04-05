@@ -1,5 +1,6 @@
 #include "Statistics.h"
-
+#include <stdio.h>
+#include <string.h>
 
 // typedef struct _RelStat{
 // 	int numTuples;
