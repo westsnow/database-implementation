@@ -68,7 +68,7 @@ void Statistics::Write(char *fromWhere){
 	{
 	    stat_file<<r->first<<" "<<r->second->numTuples<<endl;
 	    for (hash_map<char*, int>::iterator att = r->second->attInfo.begin();
-	    			att != relInfo.end();
+	    			att != r->second->attInfo.end();
 	    			++att) // for each item in the hash map:
 	    	{
 	    		stat_file<<"-"<<att->first<<" "<<att->second<<endl;
