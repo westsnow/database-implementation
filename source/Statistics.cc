@@ -61,14 +61,21 @@ void Statistics::Write(char *fromWhere){
 
 	// write
 	stat_file.open(fromWhere);
-	for (hash_map<char*, RelStat*>::iterator it = relInfo.begin();
-			it != relInfo.end();
-			++it) // for each item in the hash map:
+
+	for (hash_map<char*, RelStat*>::iterator r = relInfo.begin();
+			r != relInfo.end();
+			++r) // for each item in the hash map:
 	{
-	    cout<<it->first<<endl;
-	    cout<<it->second->numTuples<<endl;
+	    stat_file<<r->first<<" "<<r->second->numTuples<<endl;
+	    for (hash_map<char*, int>::iterator att = r->second->attInfo.begin();
+	    			att != relInfo.end();
+	    			++att) // for each item in the hash map:
+	    	{
+	    		stat_file<<"-"<<att->first<<" "<<att->second<<endl;
+	    	}
 	}
-	stat_file<<"hey!"<<endl;
+
+
 	stat_file.close();
 
 }
