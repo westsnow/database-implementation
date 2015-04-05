@@ -60,7 +60,8 @@ void Statistics::Read(char *fromWhere){
 	while(getline(stat_file, line)){
 		if(!line.substr(0,1).compare("-")!= 0){
 			int idx = line.find(" ");
-			relName = line.substr(1,idx-1).c_str();
+			relName = new char[line.length()+1];
+			strcpy(relName, line.substr(1,idx-1).c_str());
 			int numTuples = atoi(line.substr(idx+1, line.length()-idx-1).c_str());
 
 			RelStat* tmp = new RelStat;
@@ -69,7 +70,8 @@ void Statistics::Read(char *fromWhere){
 		}
 		else{
 			int idx = line.find(" ");
-			char *attName = line.substr(0,idx).c_str();
+			char *attName = new char [line.length()+1];
+			strcpy(attName, line.substr(0,idx).c_str());
 			int numDistincts = atoi(line.substr(idx+1, line.length()-idx-1).c_str());
 			relInfo[relName]->attInfo[attName] = numDistincts;
 		}

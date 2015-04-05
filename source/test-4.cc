@@ -93,6 +93,9 @@ void q0(){
 	s.AddAtt(relName[1], "ps_suppkey", 10000);	
 
 	s.Write(fileName);
+
+	Statistics s1;
+	s1.Read(fileName);
 }
 
 // void q0 (){
