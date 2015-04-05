@@ -51,8 +51,29 @@ void Statistics::CopyRel(char *oldName, char *newName)
 	}
 }
 	
-void Statistics::Read(char *fromWhere)
-{
+void Statistics::Read(char *fromWhere){
+
+	ifstream stat_file;
+	string line;
+	stat_file.open(fromWhere);
+	char *relName;
+	while(getline(stat_file, line)){
+		if(!line.substr(0,1).compare("-")!= 0){
+			int idx = line.find(" ");
+			relName = line.substr(1,idx-1).c_str();
+			int numTuples = atoi(line.substr(idx+1, line.length()-idx-1).c_str());
+
+			RelStat* tmp = new RelStat;
+			tmp->numTuples = numTuples;
+			relInfo[relName] = tmp;
+		}
+		else{
+			int idx = line.find(" ");
+			char *attName = line.substr(0,idx).c_str();
+			int numDistincts = atoi(line.substr(idx+1, line.length()-idx-1).c_str());
+			relInfo[relName]->attInfo[attName] = numDistincts;
+		}
+	}
 
 }
 void Statistics::Write(char *fromWhere){

@@ -3,6 +3,7 @@
 #include "ParseTree.h"
 #include <iostream>
 #include <fstream>
+#include <string>
 
 #ifdef __GNUC__
 #include <ext/hash_map>
