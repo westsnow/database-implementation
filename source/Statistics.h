@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 
 #ifdef __GNUC__
 #include <ext/hash_map>
@@ -21,7 +22,7 @@ using namespace std;
 class RelStat{
 public:
 	int numTuples;
-	hash_map<char*, int> attInfo;
+	hash_map<string, int> attInfo;
 	RelStat(){}
 	RelStat(RelStat &copyMe){
 		numTuples = copyMe.numTuples;
@@ -32,6 +33,8 @@ public:
 		attInfo = other.attInfo;
 		return *this;
 	}
+	bool attrExists(string attrName);
+	int getValue(string attName);
 };
 
 
@@ -39,12 +42,13 @@ public:
 class Statistics
 {
 public:
-	hash_map<char*, RelStat*> relInfo;
+	hash_map<string, RelStat*> relInfo;
 	Statistics();
 	Statistics(Statistics &copyMe);	 // Performs deep copy
 	~Statistics();
 
-	bool RelExists(char * relName);
+	bool RelExists(string relName);
+
 	void AddRel(char *relName, int numTuples);
 	void AddAtt(char *relName, char *attName, int numDistincts);
 	void CopyRel(char *oldName, char *newName);
@@ -54,6 +58,8 @@ public:
 
 	void  Apply(struct AndList *parseTree, char *relNames[], int numToJoin);
 	double Estimate(struct AndList *parseTree, char **relNames, int numToJoin);
+private:
+	string getTableNameFromAttr(string attrName);
 
 };
 

@@ -152,6 +152,8 @@ void q1 (){
 	yy_scan_string(cnf);
 	yyparse();
 
+	PrintAndList(final);
+
 	double result = s.Estimate(final, relName, 1);
 	cout<<"Your estimation Result  " <<result;
 	cout<<"\n Correct Answer: 8.5732e+5";
@@ -345,7 +347,6 @@ void q5 (){
 	yy_scan_string(cnf);
 	yyparse();
 
-
 	double result = s.Estimate(final, relName, 3);
 
 	if(fabs(result-400081)>0.1)
@@ -526,12 +527,14 @@ void q10 (){
 	s.Apply(final, relName, 2);
 
 	cnf = " (l_orderkey = o_orderkey) ";
-	yy_scan_string(cnf);                                                                               	yyparse();
+	yy_scan_string(cnf);        
+	yyparse();
 
 	s.Apply(final, relName, 3);  
 	
 	cnf = "(c_nationkey = n_nationkey) ";
-	yy_scan_string(cnf);                                                                               	yyparse();	
+	yy_scan_string(cnf);                                                                             
+	yyparse();	
 	
 	double result = s.Estimate(final, relName, 4);
 	if(fabs(result-2000405)>0.1)

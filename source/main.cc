@@ -5,7 +5,7 @@
 #endif
 
 #include <iostream>
-
+#include <string>
 
 
 namespace std
@@ -17,11 +17,10 @@ using namespace std;
 
 int main()
 {
+hash_map<string, int> hm;
 
-hash_map<char* , int> hm;
-
-char* name1 = "abc";
-char* name2 = "abc";
+string name1 = "abc";
+string name2 = "abc";
 
 hm[name1] = 1;
 hm[name2] = 2;
