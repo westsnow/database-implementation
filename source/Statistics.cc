@@ -95,63 +95,61 @@ void Statistics::CopyRel(char *oldName, char *newName)
 		relInfo[s_newName] = newRel;
 	}
 }
-	void Statistics::Read(char *fromWhere){}
-	void Statistics::Write(char *fromWhere){}
+//	void Statistics::Read(char *fromWhere){}
+//	void Statistics::Write(char *fromWhere){}
 
-// void Statistics::Read(char *fromWhere){
+ void Statistics::Read(char *fromWhere){
 
-// 	ifstream stat_file;
-// 	string line;
-// 	stat_file.open(fromWhere);
-// 	char *relName;
-// 	if(stat_file.is_open()){
-// 		cout<<"Open";
-// 	}
-// 	while(getline(stat_file, line)){
+ 	ifstream stat_file;
+ 	string line;
+ 	stat_file.open(fromWhere);
+ 	string relName;
 
-// 		if(line.substr(0,1).compare("-")!= 0){
-// 			int idx = line.find(" ");
-// 			relName = new char[line.length()+1];
-// 			strcpy(relName, line.substr(1,idx-1).c_str());
-// 			int numTuples = atoi(line.substr(idx+1, line.length()-idx-1).c_str());
-// 			RelStat* tmp = new RelStat;
-// 			tmp->numTuples = numTuples;
-// 			relInfo[relName] = tmp;
-// 		}
-// 		else{
-// 			int idx = line.find(" ");
-// 			char *attName = new char [line.length()+1];
-// 			strcpy(attName, line.substr(0,idx).c_str());
-// 			int numDistincts = atoi(line.substr(idx+1, line.length()-idx-1).c_str());
-// 			relInfo[relName]->attInfo[attName] = numDistincts;
-// 		}
-// 	}
+ 	while(getline(stat_file, line)){
 
-// }
-// void Statistics::Write(char *fromWhere){
+ 		if(line.substr(0,1).compare("-")!= 0){
+ 			int idx = line.find(" ");
+ 			relName = "";
+ 			relName = line.substr(1,idx-1);
+ 			int numTuples = atoi(line.substr(idx+1, line.length()-idx-1).c_str());
+ 			RelStat* tmp = new RelStat;
+ 			tmp->numTuples = numTuples;
+ 			relInfo[relName] = tmp;
+ 		}
+ 		else{
+ 			int idx = line.find(" ");
+ 			string attName = "";
+ 			attName = line.substr(0,idx);
+ 			int numDistincts = atoi(line.substr(idx+1, line.length()-idx-1).c_str());
+ 			relInfo[relName]->attInfo[attName] = numDistincts;
+ 		}
+ 	}
 
-// 	ofstream stat_file;
+ }
+ void Statistics::Write(char *fromWhere){
 
-// 	// write
-// 	stat_file.open(fromWhere);
+ 	ofstream stat_file;
 
-// 	for (hash_map<string, RelStat*>::iterator r = relInfo.begin();
-// 			r != relInfo.end();
-// 			++r) // for each item in the hash map:
-// 	{
-// 	    stat_file<<r->first<<" "<<r->second->numTuples<<endl;
-// 	    for (hash_map<char*, int>::iterator att = r->second->attInfo.begin();
-// 	    			att != r->second->attInfo.end();
-// 	    			++att) // for each item in the hash map:
-// 	    	{
-// 	    		stat_file<<"-"<<att->first<<" "<<att->second<<endl;
-// 	    	}
-// 	}
+ 	// write
+ 	stat_file.open(fromWhere);
+
+ 	for (hash_map<string, RelStat*>::iterator r = relInfo.begin();
+ 			r != relInfo.end();
+ 			++r) // for each item in the hash map:
+ 	{
+ 	    stat_file<<r->first<<" "<<r->second->numTuples<<endl;
+ 	    for (hash_map<string, int>::iterator att = r->second->attInfo.begin();
+ 	    			att != r->second->attInfo.end();
+ 	    			++att) // for each item in the hash map:
+ 	    	{
+ 	    		stat_file<<"-"<<att->first<<" "<<att->second<<endl;
+ 	    	}
+ 	}
 
 
-// 	stat_file.close();
+ 	stat_file.close();
 
-// }
+ }
 string Statistics::getTableNameFromAttr(string attrName){
 	//printf("%s to find\n", attrName.c_str());
 	for( hash_map<string, RelStat*>::iterator iter = relInfo.begin(); iter != relInfo.end(); ++iter ){
@@ -360,3 +358,9 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
 		return getAndListFraction(andFraction);
 
 }
+
+
+
+
+
+
