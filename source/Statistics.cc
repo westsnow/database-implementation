@@ -82,7 +82,16 @@ void Statistics::CopyRel(char *oldName, char *newName)
 	string s_oldName(oldName);
 	string s_newName(newName);
 	if(RelExists(s_oldName)){
+		hash_map<string, int> newAttInfo;
 		RelStat *newRel = new RelStat( *(relInfo[s_oldName]) );
+		for (auto it = newRel->attInfo.begin(); it != newRel->attInfo.end(); ++it){
+			string newAttName = s_newName + "." +it->first;
+			//cout<<newAttName<<endl;
+			//cout<<it->first
+			newAttInfo[newAttName] = it->second;
+		}
+		newRel->attInfo = newAttInfo;
+
 		relInfo[s_newName] = newRel;
 	}
 }
@@ -144,9 +153,9 @@ void Statistics::CopyRel(char *oldName, char *newName)
 
 // }
 string Statistics::getTableNameFromAttr(string attrName){
-	// printf("%s to find\n", attrName);
+	//printf("%s to find\n", attrName.c_str());
 	for( hash_map<string, RelStat*>::iterator iter = relInfo.begin(); iter != relInfo.end(); ++iter ){
-		// printf("first is %s\n", iter->first);
+		//cout<<iter->first<<endl;
 		if(iter->second->attrExists(attrName))
 			return iter->first;
 	}
@@ -167,82 +176,187 @@ double getAndListFraction(vector<double> andFraction){
 	return result;
 }
 
-void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJoin)
-{
+
+
+
+void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJoin){
+
+	struct AndList* andList = parseTree;
+		struct OrList* orList = NULL;
+		double result = 0.0;
+		double fraction = 1.0;
+
+		bool hasJoin = false;
+
+		std::vector<double> andFraction;
+		string joinedTableName = "";
+
+		while(andList != NULL){
+			// double andFraction = 1.0;
+			orList = andList->left;
+			std::vector<double> orFraction;
+			bool hasJoinInner = false;
+			while(orList != NULL){
+				struct ComparisonOp *pCom = orList->left;
+				struct Operand* leftOperand = pCom->left;
+				struct Operand* rightOperand = pCom->right;
+				string leftValue(leftOperand->value);
+				string rightValue(rightOperand->value);
+				string tableNameOfLeft = getTableNameFromAttr(leftOperand->value);
+
+				string tableNameOfRight = getTableNameFromAttr(rightOperand->value);
+
+				if(tableNameOfLeft == "" && tableNameOfRight == ""){
+					printf("fatal error, attribute (%s,%s) not found in any table\n", leftOperand->value, rightOperand->value);
+					exit(1);
+				}
+				//estimate join
+				if(leftOperand->code == 4 && rightOperand->code == 4){
+					hasJoin = true;
+					hasJoinInner = true;
+					int mul1 = relInfo[tableNameOfLeft]->numTuples;
+					int mul2 = relInfo[tableNameOfRight]->numTuples;
+					int dis1 = relInfo[tableNameOfLeft]->attInfo[leftValue];
+					int dis2 = relInfo[tableNameOfRight]->attInfo[rightValue];
+					//in case causing integer overflow
+					double res = ((double)mul1/max(dis1,dis2)) * mul2;
+					andFraction.push_back(res);
+					//andList = andList->rightAnd;
+
+					hash_map<string, int> joinedAttInfo;
+
+					for (auto it = relInfo[tableNameOfLeft]->attInfo.begin(); it != relInfo[tableNameOfLeft]->attInfo.end(); ++it){
+						joinedAttInfo[it->first] = it->second;
+					}
+
+					for (auto it = relInfo[tableNameOfRight]->attInfo.begin(); it != relInfo[tableNameOfRight]->attInfo.end(); ++it){
+						joinedAttInfo[it->first] = it->second;
+					}
+
+					RelStat *joinedStat = new RelStat();
+
+					joinedStat->attInfo = joinedAttInfo;
+					joinedTableName = tableNameOfLeft+"|"+tableNameOfRight;
+					relInfo[joinedTableName] = joinedStat;
+					relInfo.erase(tableNameOfRight);
+					relInfo.erase(tableNameOfLeft);
+
+					break;
+				}else{
+					double f;
+					if(leftOperand->code == 4)
+						f = 1.0/relInfo[tableNameOfLeft]->getValue(leftValue) ;
+					else
+						f = 1.0/relInfo[tableNameOfRight]->getValue(rightValue);
+					if(pCom->code != 3)
+						f = (1.0/3);
+					// cout<<"tmp f is "<<f<<endl;
+					orFraction.push_back(f);
+				}
+
+				orList = orList->rightOr;
+			}
+			if(!hasJoinInner){
+
+				andFraction.push_back(getOrListFraction(orFraction));
+			}
+			//get next andList
+
+			andList = andList->rightAnd;
+		}
+		if(!hasJoin){
+
+			string tableName(relNames[0]);
+			andFraction.push_back(relInfo[tableName]->numTuples);
+			getAndListFraction(andFraction);
+
+		}
+		if(joinedTableName != "")
+			relInfo[joinedTableName]->numTuples = getAndListFraction(andFraction);
+
+
 
 }
+
+
 int max(int int1, int int2){
 	return int1>int2?int1:int2;
 }
 double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numToJoin)
 {
 	struct AndList* andList = parseTree;
-	struct OrList* orList = NULL;	
-	double result = 0.0;
-	double fraction = 1.0;
-	
-	bool hasJoin = false;
-	std::vector<double> andFraction;
-	while(andList != NULL){
-		// double andFraction = 1.0;
-		orList = andList->left;
-		std::vector<double> orFraction;
-		while(orList != NULL){
-			struct ComparisonOp *pCom = orList->left;
-			struct Operand* leftOperand = pCom->left;
-			struct Operand* rightOperand = pCom->right;
-			string leftValue(leftOperand->value);
-			string rightValue(rightOperand->value);
-			string tableNameOfLeft = getTableNameFromAttr(leftOperand->value);
-			string tableNameOfRight = getTableNameFromAttr(rightOperand->value);
-			if(tableNameOfLeft == "" && tableNameOfRight == ""){
-				printf("fatal error, attribute name not found in any table\n");
-				exit(1);
+		struct OrList* orList = NULL;
+		double result = 0.0;
+		double fraction = 1.0;
+
+		bool hasJoin = false;
+
+		std::vector<double> andFraction;
+		while(andList != NULL){
+			// double andFraction = 1.0;
+			orList = andList->left;
+			std::vector<double> orFraction;
+			bool hasJoinInner = false;
+			while(orList != NULL){
+				struct ComparisonOp *pCom = orList->left;
+				struct Operand* leftOperand = pCom->left;
+				struct Operand* rightOperand = pCom->right;
+				string leftValue(leftOperand->value);
+				string rightValue(rightOperand->value);
+				string tableNameOfLeft = getTableNameFromAttr(leftOperand->value);
+
+				string tableNameOfRight = getTableNameFromAttr(rightOperand->value);
+
+				if(tableNameOfLeft == "" && tableNameOfRight == ""){
+					printf("fatal error, attribute (%s,%s) not found in any table\n", leftOperand->value, rightOperand->value);
+					exit(1);
+				}
+				//estimate join
+				if(leftOperand->code == 4 && rightOperand->code == 4){
+					hasJoin = true;
+					hasJoinInner = true;
+
+					int mul1 = relInfo[tableNameOfLeft]->numTuples;
+
+					int mul2 = relInfo[tableNameOfRight]->numTuples;
+
+					int dis1 = relInfo[tableNameOfLeft]->attInfo[leftValue];
+
+					int dis2 = relInfo[tableNameOfRight]->attInfo[rightValue];
+
+					//in case causing integer overflow
+					double res = ((double)mul1/max(dis1,dis2)) * mul2;
+					andFraction.push_back(res);
+					//andList = andList->rightAnd;
+					break;
+				}else{
+					double f;
+					if(leftOperand->code == 4)
+						f = 1.0/relInfo[tableNameOfLeft]->getValue(leftValue) ;
+					else
+						f = 1.0/relInfo[tableNameOfRight]->getValue(rightValue);
+					if(pCom->code != 3)
+						f = (1.0/3);
+					// cout<<"tmp f is "<<f<<endl;
+					orFraction.push_back(f);
+				}
+				//get next orList
+				//cout<<"next or"<<endl;
+				orList = orList->rightOr;
 			}
-			//estimate join
-			if(leftOperand->code == 4 && rightOperand->code == 4){
-				hasJoin = true;
-				int mul1 = relInfo[tableNameOfLeft]->numTuples;
-				int mul2 = relInfo[tableNameOfRight]->numTuples;
-				int dis1 = relInfo[tableNameOfLeft]->attInfo[leftValue];
-				int dis2 = relInfo[tableNameOfRight]->attInfo[rightValue];
-				//in case causing integer overflow
-				double res = ((double)mul1/max(dis1,dis2)) * mul2;
-				andFraction.push_back(res);
-				andList = andList->rightAnd;
-				continue;
-			}else{
-				double f;
-				if(leftOperand->code == 4)
-					f = 1.0/relInfo[tableNameOfLeft]->getValue(leftValue) ;
-				else
-					f = 1.0/relInfo[tableNameOfRight]->getValue(rightValue);
-				if(pCom->code != 3)
-					f = (1.0/3);
-				// cout<<"tmp f is "<<f<<endl;
-				orFraction.push_back(f);		
+			if(!hasJoinInner){
+
+				andFraction.push_back(getOrListFraction(orFraction));
 			}
-			//get next orList
-			orList = orList->rightOr;
+			//get next andList
+
+			andList = andList->rightAnd;
 		}
-		andFraction.push_back(getOrListFraction(orFraction));
-		//get next andList
-		andList = andList->rightAnd;
-	}
-	if(!hasJoin){
-		string tableName(relNames[0]);
-		andFraction.push_back(relInfo[tableName]->numTuples);
-	}
-	return getAndListFraction(andFraction);
+		if(!hasJoin){
+			string tableName(relNames[0]);
+			andFraction.push_back(relInfo[tableName]->numTuples);
+		}
+
+		return getAndListFraction(andFraction);
+
 }
-
-
-
-
-
-
-
-
-
-
-
