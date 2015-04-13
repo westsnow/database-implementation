@@ -198,6 +198,8 @@ void q2 (){
 	double result = s.Estimate(final, relName, 3);
 	if(fabs(result-1500000)>0.1)
 		cout<<"error in estimating Q2\n";
+	else
+		cout<<"estimation corret"<<endl;
 	s.Apply(final, relName, 3);
 
 	s.Write(fileName);
@@ -249,6 +251,8 @@ void q3 (){
 	double result = s.Estimate(final, set3, 4);
 	if(fabs(result-60000000.0)>0.1)
 		cout<<"error in estimating Q3\n";
+	else
+		cout<<"estimation corret"<<endl;
 
 	s.Apply(final, set3, 4);
 
@@ -454,8 +458,9 @@ void q8 (){
 		
 	double result = s.Estimate(final, relName,2);
 
-	if(fabs(result-48000)>0.1)
+	if(fabs(result-48000)>0.1){
 		cout<<"error in estimating Q8\n";
+	}
 
 	s.Apply(final, relName,2);
 	

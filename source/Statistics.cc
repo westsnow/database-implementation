@@ -102,7 +102,9 @@ void Statistics::CopyRel(char *oldName, char *newName)
 
  	ifstream stat_file;
  	string line;
+ 	cout<<"before reading file"<<endl;
  	stat_file.open(fromWhere);
+ 	cout<<"have read file"<<endl;
  	string relName;
 
  	while(getline(stat_file, line)){
@@ -248,14 +250,13 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 						f = 1.0/relInfo[tableNameOfRight]->getValue(rightValue);
 					if(pCom->code != 3)
 						f = (1.0/3);
-					// cout<<"tmp f is "<<f<<endl;
+					
 					orFraction.push_back(f);
 				}
 
 				orList = orList->rightOr;
 			}
 			if(!hasJoinInner){
-
 				andFraction.push_back(getOrListFraction(orFraction));
 			}
 			//get next andList
@@ -295,6 +296,7 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
 			orList = andList->left;
 			std::vector<double> orFraction;
 			bool hasJoinInner = false;
+			string preLeftValue = "";
 			while(orList != NULL){
 				struct ComparisonOp *pCom = orList->left;
 				struct Operand* leftOperand = pCom->left;
@@ -335,8 +337,11 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
 						f = 1.0/relInfo[tableNameOfRight]->getValue(rightValue);
 					if(pCom->code != 3)
 						f = (1.0/3);
-					// cout<<"tmp f is "<<f<<endl;
-					orFraction.push_back(f);
+					if(preLeftValue == leftValue){
+						orFraction[orFraction.size()-1] += f;
+					}else
+						orFraction.push_back(f);
+					preLeftValue = leftValue;
 				}
 				//get next orList
 				//cout<<"next or"<<endl;
