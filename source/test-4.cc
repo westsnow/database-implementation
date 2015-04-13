@@ -350,8 +350,8 @@ void q5 (){
 
 
     double result = s.Estimate(final, relName, 3);
-    cout<<result;
-    if(fabs(result-400081)>0.1)
+    // cout<<result;
+    if(fabs(result-400081)>5)
         cout<<"error in estimating Q5\n";
 
     s.Apply(final, relName, 3);
@@ -538,8 +538,8 @@ void q10 (){
     yy_scan_string(cnf);                                                                                yyparse();
 
     double result = s.Estimate(final, relName, 4);
-    cout<< result;
-    if(fabs(result-2000405)>0.1)
+    // cout<< result;
+    if(fabs(result-2000405)>5)
         cout<<"error in estimating Q10\n";
 
     s.Apply(final, relName, 4);
