@@ -1,4 +1,0 @@
-lineitem 6001215
--l_shipmode 7
--l_discount 11
--l_returnflag 3

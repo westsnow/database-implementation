@@ -1,0 +1,6 @@
+lineitem|part 19653
+-l_shipmode 7
+-l_shipinstruct 4
+-l_partkey 200000
+-p_container 40
+-p_partkey 200000
