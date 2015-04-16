@@ -364,6 +364,66 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
 
 }
 
+void Statistics::init(){
+
+	char *relName[] = {"nation", "region", "part", "customer", "lineitem", "orders", "supplier","partsupp"};
+	
+	//nation
+	AddRel(relName[0],25);	
+	AddAtt(relName[0], "n_nationkey",25);
+	AddAtt(relName[0], "n_regionkey",5);
+	AddAtt(relName[0], "n_name",25);
+	
+	
+	//region
+	AddRel(relName[1],5);
+	AddAtt(relName[1], "r_regionkey",5);
+	AddAtt(relName[1], "r_name",5);
+	
+	//part
+	AddRel(relName[2],200000);
+	AddAtt(relName[2], "p_partkey",200000);
+	AddAtt(relName[2], "p_size",50);
+	AddAtt(relName[2], "p_name", 199996);
+	AddAtt(relName[2], "p_container",40);
+	
+	//customer
+	AddRel(relName[3],150000);
+	AddAtt(relName[3], "c_custkey",150000);
+	AddAtt(relName[3], "c_nationkey",25);
+	AddAtt(relName[3], "c_mktsegment",5);
+	AddAtt(relName[3], "c_name",333);
+	
+	//lineitem
+	AddRel(relName[4],6001215);
+	AddAtt(relName[4], "l_returnflag",3);
+	AddAtt(relName[4], "l_discount",11);
+	AddAtt(relName[4], "l_shipmode",7);
+	AddAtt(relName[4], "l_orderkey",1500000);
+	AddAtt(relName[4], "l_receiptdate",1500000);
+	AddAtt(relName[4], "l_partkey",200000);
+	AddAtt(relName[4], "l_shipinstruct",4);
+	AddAtt(relName[4], "l_quantity",7655);
+	
+	//orders
+	AddRel(relName[5],1500000);
+	AddAtt(relName[5], "o_orderkey",1500000);
+	AddAtt(relName[5], "o_custkey",150000);
+	AddAtt(relName[5], "o_orderdate",150000);
+	
+	//supplier
+	AddRel(relName[6],10000);
+	AddAtt(relName[6], "s_suppkey",10000);
+	AddAtt(relName[6], "s_nationkey",25);
+	AddAtt(relName[6], "s_acctbal",765);
+	
+	//partsupp
+	AddRel(relName[7],800000);
+	AddAtt(relName[7], "ps_suppkey", 10000);
+	AddAtt(relName[7], "ps_partkey", 200000);
+
+}
+
 
 
 

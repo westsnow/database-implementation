@@ -1,31 +1,38 @@
-#ifdef __GNUC__
-#include <ext/hash_map>
-#else
-#include <hash_map>
-#endif
-
 #include <iostream>
 #include <string>
-
-
-namespace std
-{
-using namespace __gnu_cxx;
-}
+#include "ParseTree.h"
+#include "Optimizer.h"
 
 using namespace std;
 
+extern "C" struct YY_BUFFER_STATE *yy_scan_string(const char*);
+extern "C" {
+	int yyparse(void);
+
+}
+extern struct TableList *tables;
+
+
+
 int main()
 {
-hash_map<string, int> hm;
+	bool run = true;
+	cout<<"Write your SQL query, to execute press enter ant then ctrl + D"<<endl;
+	while(run){
+		
+		cout<<"sql>> ";
+		yyparse();
+		TableList *tmp = tables;
+		while(tmp != NULL){
+			printf("%s\n", tmp->tableName);
+			printf("%s\n", tmp->aliasAs);
+			tmp = tmp->next;
+		}
+		Optimizer *o = new Optimizer();
+		
+		run = false;
 
-string name1 = "abc";
-string name2 = "abc";
+	}
 
-hm[name1] = 1;
-hm[name2] = 2;
-
-cout<<hm[name1]<<endl;
-
-return 0;
+	return 1;
 }

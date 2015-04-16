@@ -1,8 +1,6 @@
-lineitem|customer|orders|nation 2000400
--l_orderkey 1500000
--c_nationkey 25
--c_custkey 150000
--o_custkey 150000
--o_orderdate 3650
--o_orderkey 1500000
--n_nationkey 25
+lineitem|part 19653
+-l_shipmode 7
+-l_shipinstruct 4
+-l_partkey 200000
+-p_container 40
+-p_partkey 200000

@@ -58,6 +58,7 @@ public:
 
 	void  Apply(struct AndList *parseTree, char *relNames[], int numToJoin);
 	double Estimate(struct AndList *parseTree, char **relNames, int numToJoin);
+	void init();
 private:
 	string getTableNameFromAttr(string attrName);
 

@@ -39,37 +39,58 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     OR = 258,
-     AND = 259,
-     Name = 260,
+     Name = 258,
+     Float = 259,
+     Int = 260,
      String = 261,
-     Float = 262,
-     Int = 263
+     SELECT = 262,
+     GROUP = 263,
+     DISTINCT = 264,
+     BY = 265,
+     FROM = 266,
+     WHERE = 267,
+     SUM = 268,
+     AS = 269,
+     AND = 270,
+     OR = 271
    };
 #endif
 /* Tokens.  */
-#define OR 258
-#define AND 259
-#define Name 260
+#define Name 258
+#define Float 259
+#define Int 260
 #define String 261
-#define Float 262
-#define Int 263
+#define SELECT 262
+#define GROUP 263
+#define DISTINCT 264
+#define BY 265
+#define FROM 266
+#define WHERE 267
+#define SUM 268
+#define AS 269
+#define AND 270
+#define OR 271
 
 
 
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 20 "./source/Parser.y"
+#line 26 "./source/Parser.y"
 {
- 	struct Operand *myOperand;
-	struct ComparisonOp *myComparison; 
-  	struct OrList *myOrList;
-  	struct AndList *myAndList;
+ 	struct FuncOperand *myOperand;
+	struct FuncOperator *myOperator; 
+	struct TableList *myTables;
+	struct ComparisonOp *myComparison;
+	struct Operand *myBoolOperand;
+	struct OrList *myOrList;
+	struct AndList *myAndList;
+	struct NameList *myNames;
 	char *actualChars;
+	char whichOne;
 }
 /* Line 1529 of yacc.c.  */
-#line 73 "./source/y.tab.h"
+#line 94 "./source/y.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
