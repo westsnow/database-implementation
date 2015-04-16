@@ -229,7 +229,6 @@ void q3 (){
     char *cnf = "(s.s_nationkey = n1.n_nationkey)";
     yy_scan_string(cnf);
     yyparse();
-    cout << "ya";
     s.Apply(final, set1, 2);
 
     s.Write("a2.text");

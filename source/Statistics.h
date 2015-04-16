@@ -5,24 +5,25 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
-#ifdef __GNUC__
-#include <ext/hash_map>
-#else
-#include <hash_map>
-#endif
+// #ifdef __GNUC__
+// #include <ext/hash_map>
+// #else
+// #include <hash_map>
+// #endif
 
-namespace std
-{
-using namespace __gnu_cxx;
-}
+// namespace std
+// {
+// using namespace __gnu_cxx;
+// }
 
 using namespace std;
 
 class RelStat{
 public:
 	int numTuples;
-	hash_map<string, int> attInfo;
+	unordered_map<string, int> attInfo;
 	RelStat(){}
 	RelStat(RelStat &copyMe){
 		numTuples = copyMe.numTuples;
@@ -42,7 +43,7 @@ public:
 class Statistics
 {
 public:
-	hash_map<string, RelStat*> relInfo;
+	unordered_map<string, RelStat*> relInfo;
 	Statistics();
 	Statistics(Statistics &copyMe);	 // Performs deep copy
 	~Statistics();

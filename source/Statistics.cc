@@ -36,7 +36,7 @@ bool RelStat::attrExists(string attName){
 	// char name[30];
 	// strcpy(name, "l_returnflag");
 
-	hash_map<string, int>::iterator ite = attInfo.find(attName);
+	unordered_map<string, int>::iterator ite = attInfo.find(attName);
 	if( ite == attInfo.end()){
 		// cout<<"no luck to find "<<attName<<endl;
 		return false;
@@ -45,7 +45,7 @@ bool RelStat::attrExists(string attName){
 }
 
 int RelStat::getValue(string attName){
-	hash_map<string, int>::iterator i = attInfo.find(attName);
+	unordered_map<string, int>::iterator i = attInfo.find(attName);
 	if( i == attInfo.end())
 		return -1;
 	return i->second;
@@ -53,7 +53,7 @@ int RelStat::getValue(string attName){
 
 
 bool Statistics::RelExists(string relName){
-	hash_map<string, RelStat*>::iterator i = relInfo.find(relName);
+	unordered_map<string, RelStat*>::iterator i = relInfo.find(relName);
 	if( i == relInfo.end() )
 		return false;
 	return true;
@@ -82,7 +82,7 @@ void Statistics::CopyRel(char *oldName, char *newName)
 	string s_oldName(oldName);
 	string s_newName(newName);
 	if(RelExists(s_oldName)){
-		hash_map<string, int> newAttInfo;
+		unordered_map<string, int> newAttInfo;
 		RelStat *newRel = new RelStat( *(relInfo[s_oldName]) );
 		for (auto it = newRel->attInfo.begin(); it != newRel->attInfo.end(); ++it){
 			string newAttName = s_newName + "." +it->first;
@@ -135,12 +135,12 @@ void Statistics::CopyRel(char *oldName, char *newName)
  	// write
  	stat_file.open(fromWhere);
 
- 	for (hash_map<string, RelStat*>::iterator r = relInfo.begin();
+ 	for (unordered_map<string, RelStat*>::iterator r = relInfo.begin();
  			r != relInfo.end();
- 			++r) // for each item in the hash map:
+ 			++r) // for each item in the unordered map:
  	{
  	    stat_file<<r->first<<" "<<r->second->numTuples<<endl;
- 	    for (hash_map<string, int>::iterator att = r->second->attInfo.begin();
+ 	    for (unordered_map<string, int>::iterator att = r->second->attInfo.begin();
  	    			att != r->second->attInfo.end();
  	    			++att) // for each item in the hash map:
  	    	{
@@ -154,7 +154,7 @@ void Statistics::CopyRel(char *oldName, char *newName)
  }
 string Statistics::getTableNameFromAttr(string attrName){
 	//printf("%s to find\n", attrName.c_str());
-	for( hash_map<string, RelStat*>::iterator iter = relInfo.begin(); iter != relInfo.end(); ++iter ){
+	for( unordered_map<string, RelStat*>::iterator iter = relInfo.begin(); iter != relInfo.end(); ++iter ){
 		//cout<<iter->first<<endl;
 		if(iter->second->attrExists(attrName))
 			return iter->first;
@@ -223,7 +223,7 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 					andFraction.push_back(res);
 					//andList = andList->rightAnd;
 
-					hash_map<string, int> joinedAttInfo;
+					unordered_map<string, int> joinedAttInfo;
 
 					for (auto it = relInfo[tableNameOfLeft]->attInfo.begin(); it != relInfo[tableNameOfLeft]->attInfo.end(); ++it){
 						joinedAttInfo[it->first] = it->second;

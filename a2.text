@@ -1,0 +1,15 @@
+s|n1 10000
+-s.s_nationkey 25
+-n1.n_nationkey 25
+nation 25
+-n_nationkey 25
+c 150000
+-c.c_custkey 150000
+-c.c_nationkey 25
+n2 25
+-n2.n_nationkey 25
+customer 150000
+-c_nationkey 25
+-c_custkey 150000
+supplier 10000
+-s_nationkey 25

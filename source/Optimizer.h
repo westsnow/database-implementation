@@ -6,7 +6,7 @@
 #endif /* OPTIMIZER_H */
 
 
-struct QueryPlan
+struct QueryPlanNode
 {
 	/* data */
 };
