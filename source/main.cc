@@ -17,18 +17,15 @@ extern struct TableList *tables;
 int main()
 {
 	bool run = true;
+	Statistics *s = new Statistics();
+	Optimizer *optimizer = new Optimizer(s);
 	cout<<"Write your SQL query, to execute press enter ant then ctrl + D"<<endl;
 	while(run){
 		
 		cout<<"sql>> ";
 		yyparse();
-		TableList *tmp = tables;
-		while(tmp != NULL){
-			printf("%s\n", tmp->tableName);
-			printf("%s\n", tmp->aliasAs);
-			tmp = tmp->next;
-		}
-		Optimizer *o = new Optimizer();
+		
+		optimizer->planQuery();
 		
 		run = false;
 

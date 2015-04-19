@@ -17,7 +17,7 @@
 // {
 // using namespace __gnu_cxx;
 // }
-
+	
 using namespace std;
 
 class RelStat{
@@ -36,6 +36,7 @@ public:
 	}
 	bool attrExists(string attrName);
 	int getValue(string attName);
+	void init();
 };
 
 
@@ -60,8 +61,9 @@ public:
 	void  Apply(struct AndList *parseTree, char *relNames[], int numToJoin);
 	double Estimate(struct AndList *parseTree, char **relNames, int numToJoin);
 	void init();
-private:
 	string getTableNameFromAttr(string attrName);
+private:
+	
 
 };
 
