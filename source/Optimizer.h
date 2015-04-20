@@ -22,8 +22,10 @@ class Optimizer{
 		Optimizer(Statistics *st);
 		~Optimizer();
 
+		void traverse(QueryPlanNode *root);
 		void planQuery();
 		void createTableNodes();
+		void createJoinNodes();
 		
 		
 };
@@ -32,8 +34,10 @@ class Optimizer{
 class QueryPlanNode{
 	
 	public:
-		QueryPlanNode *children = NULL;
+		vector <QueryPlanNode*> children;
 		int cost;
+
+		virtual string toString() = 0;
 
 };
 
@@ -43,14 +47,14 @@ class TableNode : public QueryPlanNode {
 	public:
 		CNF cond;
 		Record literal;
-		string tableName;
-		string tableAlias;
+		char *tableName;
+		char *tableAlias;
 		int outPipeID;
 		string fileName;
 		Schema *outSchema;
 
-		void relatedSelectCNF(AndList *boolean, char *name, char *alias, Statistics *s);
-		TableNode(string name, string alias, int outPipeID);
+		void relatedSelectCNF(AndList *boolean, Statistics *s);
+		TableNode(char *name, char *alias, int outPipeID);
 		string toString();
 
 };
@@ -64,7 +68,7 @@ class ProjectNode : public QueryPlanNode {
 
 		int inPipeID;
 		int outPipeID;
-
+		
 		string toString(); 
 };
 
@@ -75,7 +79,11 @@ class JoinNode : public QueryPlanNode {
 		int leftPipeID;
 		int outPipeID;
 		CNF cond;
+		Record literal;
+		Schema *outSchema;
 
+		void relatedJoinCNF(AndList *boolean, Statistics *s);
+		JoinNode(int leftPipeID, int rightPipeID, int outPipeID);
 		string toString();
 };
 
