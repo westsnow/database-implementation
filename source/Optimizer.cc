@@ -13,7 +13,7 @@ extern NameList* attsToSelect;
 extern int distinctAtts;
 extern int distinctFunc;
 
-char* catalog_path = "/Users/Migue/DBIDATA/catalog";
+char* catalog_path = "/Users/Migue/Documents/DBIDATA/catalog";
 
 using namespace std;
 
@@ -28,62 +28,7 @@ void Optimizer::planQuery(){
 
 }
 
-CNF* Optimizer::relatedSelectCNF(AndList *boolean, char *c_name, char *c_alias){
-	string name(c_name);
-	string alias(c_alias);
-	AndList *andTmp = boolean;
-	AndList *andFinal = NULL;
-	CNF result;
 
-	while(andTmp != NULL){
-
-		OrList *orList = andTmp->left;
-
-		while(orList != NULL){
-			struct ComparisonOp *pCom = orList->left;
-			struct Operand* leftOperand = pCom->left;
-			printf("%d\n", leftOperand->code);
-			struct Operand* rightOperand = pCom->right;
-			printf("%d\n", rightOperand->code);
-			string leftValue(leftOperand->value);
-			string rightValue(rightOperand->value);
-			string tableNameOfLeft = s->getTableNameFromAttr(leftOperand->value);
-			string tableNameOfRight = s->getTableNameFromAttr(rightOperand->value);
-
-			if((leftOperand->code == 3 && rightOperand->code != 3) || (leftOperand->code != 3 && rightOperand->code == 3)){
-				if((tableNameOfLeft.compare(alias) == 0) || (tableNameOfRight.compare(alias) == 0)){
-					AndList *node = new AndList();
-					if(andFinal == NULL){
-						node->left = andTmp->left;
-						node->rightAnd = NULL;
-						
-					}
-					else{
-						node->rightAnd = andFinal;
-						node->left = andTmp->left;
-					}
-					andFinal = node;
-					break;
-				}
-			}
-			orList = orList->rightOr;
-		}
-		andTmp = andTmp->rightAnd;
-	}
-	if(andFinal != NULL){
-		
-		Record literal;
-		//need to check this!!!
-		result.GrowFromParseTree (andFinal, new Schema(catalog_path, c_name, c_alias), literal);
-
-		result.Print();
-
-	}else{
-		cout<<"Nothing";
-	}
-		
-
-}
 
 void Optimizer::createTableNodes(){
 	
@@ -94,8 +39,10 @@ void Optimizer::createTableNodes(){
 		string name(tmp->tableName);
 		string alias(tmp->aliasAs);
 		s->CopyRel(tmp->tableName, tmp->aliasAs);
-		CNF *related = relatedSelectCNF(boolean, tmp->tableName, tmp->aliasAs);
 		TableNode *t = new TableNode(name, alias, pipeid);
+		t->relatedSelectCNF(boolean, tmp->tableName, tmp->aliasAs, s);
+		t->toString();
+		
 		
 		tableNodes.push_back(*(t));
 		
@@ -120,7 +67,92 @@ TableNode::TableNode(string name, string alias, int outPipeID){
 	fileName = "";
 }
 
+void TableNode::relatedSelectCNF(AndList *boolean, char *c_name, char *c_alias, Statistics *s){
+	string name(c_name);
+	string alias(c_alias);
+	AndList *andTmp = boolean;
+	AndList *andFinal = NULL;
+	
+
+	while(andTmp != NULL){
+
+		OrList *orList = andTmp->left;
+
+		while(orList != NULL){
+			struct ComparisonOp *pCom = orList->left;
+			struct Operand* leftOperand = pCom->left;
+			//printf("%d\n", leftOperand->code);
+			struct Operand* rightOperand = pCom->right;
+			//printf("%d\n", rightOperand->code);
+			string leftValue(leftOperand->value);
+			string rightValue(rightOperand->value);
+			string tableNameOfLeft = s->getTableNameFromAttr(leftOperand->value);
+			string tableNameOfRight = s->getTableNameFromAttr(rightOperand->value);
+
+			if((leftOperand->code == NAME && rightOperand->code != NAME) || (leftOperand->code != NAME && rightOperand->code == NAME)){
+				if((tableNameOfLeft.compare(alias) == 0) || (tableNameOfRight.compare(alias) == 0)){
+					AndList *node = new AndList();
+					if(andFinal == NULL){
+						node->left = andTmp->left;
+						node->rightAnd = NULL;
+						
+					}
+					else{
+						node->rightAnd = andFinal;
+						node->left = andTmp->left;
+					}
+					andFinal = node;
+					break;
+				}
+			}
+			orList = orList->rightOr;
+		}
+		andTmp = andTmp->rightAnd;
+	}
+
+	outSchema = new Schema(catalog_path, c_name, c_alias);
+	
+	if(andFinal != NULL){
+		
+		//Record literal;
+		//need to check this!!!
+		cond.GrowFromParseTree (andFinal, outSchema, literal);
+
+		
+
+	}else{
+		
+		// Attribute *dummy = outSchema->GetAtts();
+		// AndList *final = new AndList();
+		// OrList *only = new OrList();
+		// only->left->code = EQUALS;	
+		// only->left->left->code = dummy->myType;
+		// only->left->left->value = dummy->name;
+		// only->left->right->code = dummy->myType;
+		// only->left->right->value = dummy->name;
+		// only->rightOr = NULL;
+		// final->left = only;
+		// final->rightAnd = NULL;
+		// cond.GrowFromParseTree (final, outSchema, literal);
+	}
+		
+
+}
+
 string TableNode::toString(){
+
+	cout<<"***************************"<<endl;
+	cout<<"Table "<<tableName<<" AS "<<tableAlias<<endl;
+	cout<<"Select From File Operation"<<endl;
+	cout<<"Input file: "<<endl;
+	cout<<"Output pipe Id: "<<outPipeID<<endl;
+	cout<<"Applied CNF: "<<endl;
+		cond.Print();
+	cout<<"Output Schema:"<<endl;
+		outSchema->Print();
+
+	cout<<"\t";
+
 
 }
 

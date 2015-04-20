@@ -62,6 +62,8 @@ public:
 
 	~Schema ();
 
+	void Print();
+
 };
 
 #endif

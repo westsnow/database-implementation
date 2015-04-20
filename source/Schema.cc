@@ -4,6 +4,14 @@
 #include <stdlib.h>
 #include <iostream>
 
+
+void Schema:: Print(){
+
+	for (int i = 0; i < numAtts; i++) {
+		printf("\t%s: %d\n", myAtts[i].name, myAtts[i].myType);
+	}
+}
+
 int Schema :: Find (char *attName) {
 
 	for (int i = 0; i < numAtts; i++) {

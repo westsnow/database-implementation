@@ -24,7 +24,7 @@ class Optimizer{
 
 		void planQuery();
 		void createTableNodes();
-		CNF* relatedSelectCNF(AndList *boolean, char *name, char *alias);
+		
 		
 };
 
@@ -42,11 +42,14 @@ class TableNode : public QueryPlanNode {
 	
 	public:
 		CNF cond;
+		Record literal;
 		string tableName;
 		string tableAlias;
 		int outPipeID;
 		string fileName;
+		Schema *outSchema;
 
+		void relatedSelectCNF(AndList *boolean, char *name, char *alias, Statistics *s);
 		TableNode(string name, string alias, int outPipeID);
 		string toString();
 
