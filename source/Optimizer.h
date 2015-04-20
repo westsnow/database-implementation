@@ -15,7 +15,7 @@ class Optimizer{
 	private:
 		QueryPlanNode *planRoot;
 		Statistics *s;
-		vector<TableNode> tableNodes;
+		vector<TableNode*> tableNodes;
 
 	public:
 

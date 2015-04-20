@@ -28,7 +28,10 @@ void Optimizer::planQuery(){
 
 }
 
+int evalOrder(vector<TableNode*> operands, Statistics *s, int minCost){
+	return 0;
 
+}
 
 void Optimizer::createTableNodes(){
 	
@@ -38,21 +41,39 @@ void Optimizer::createTableNodes(){
 
 		string name(tmp->tableName);
 		string alias(tmp->aliasAs);
-		s->CopyRel(tmp->tableName, tmp->aliasAs);
+		//s->CopyRel(tmp->tableName, tmp->aliasAs);
 		TableNode *t = new TableNode(name, alias, pipeid);
 		t->relatedSelectCNF(boolean, tmp->tableName, tmp->aliasAs, s);
 		t->toString();
 		
 		
-		tableNodes.push_back(*(t));
+		tableNodes.push_back(t);
 		
 		tmp = tmp->next;
 		pipeid += 1;
 	} 
+	std::vector<TableNode*> tableList(tableNodes);
+	sort (tableList.begin(),tableList.end());
+	int minCost = INT_MAX;
+	int cost;
+	do {
+		cost=evalOrder(tableList, s, minCost);
+		
+		// for(int i=0; i<tableList.size(); i++){
+		// 	cout<<tableList[i]->tableName<<"-";
+		// }
+		cout<<endl;
+		if(cost<minCost && cost>0) {
+			minCost = cost; 
+			tableNodes = tableList; 
+		}
+	} while ( next_permutation(tableList.begin(), tableList.end()) );
 
 
 
 }
+
+
 
 /*
 	TableNode Methods

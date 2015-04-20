@@ -8,7 +8,20 @@
 void Schema:: Print(){
 
 	for (int i = 0; i < numAtts; i++) {
-		printf("\t%s: %d\n", myAtts[i].name, myAtts[i].myType);
+		switch(myAtts[i].myType){
+			case Int:
+				printf("\t%s: INT\n", myAtts[i].name);
+				break;
+			case Double:
+				printf("\t%s: DOUBLE\n", myAtts[i].name);
+				break;
+
+			case String:
+				printf("\t%s: STRING\n", myAtts[i].name);
+				break;
+
+		}
+		
 	}
 }
 
