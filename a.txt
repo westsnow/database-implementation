@@ -1,7 +1,3 @@
-s 10000
--s.s_acctbal 765
--s.s_suppkey 10000
--s.s_nationkey 25
 partsupp 800000
 -ps_partkey 200000
 -ps_suppkey 10000
@@ -18,6 +14,9 @@ lineitem 6001215
 -l_shipinstruct 4
 -l_discount 11
 -l_returnflag 3
+r 0
+-r.r_name 5
+-r.r_regionkey 5
 supplier 10000
 -s_acctbal 765
 -s_nationkey 25
@@ -30,19 +29,11 @@ part 200000
 -p_name 199996
 -p_size 50
 -p_partkey 200000
-p 200000
--p.p_size 50
--p.p_name 199996
--p.p_partkey 200000
--p.p_container 40
 customer 150000
 -c_name 333
 -c_mktsegment 5
 -c_nationkey 25
 -c_custkey 150000
-ps 800000
--ps.ps_partkey 200000
--ps.ps_suppkey 10000
 nation 25
 -n_name 25
 -n_regionkey 5

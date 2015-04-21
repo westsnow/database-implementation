@@ -198,7 +198,7 @@ void TableNode::relatedSelectCNF(AndList *boolean, Statistics *s){
 		s->Apply(andFinal, relName, 1);
 		cond.GrowFromParseTree (andFinal, outSchema, literal);
 		
-		
+		s->Write("a.txt");
 		
 
 	}else{
@@ -320,9 +320,11 @@ void JoinNode::relatedJoinCNF(AndList *boolean, Statistics *s){
 	
 	if(andFinal != NULL){
 		
-		
-		cost = s->Estimate(andFinal, NULL, 2);
-		s->Apply(andFinal, NULL, 2);
+		char *tokens[2];
+		tokens[0] = leftSchema->GetAtts()[0].name;
+		tokens[1] = rightSchema->GetAtts()[0].name;
+		cost = s->Estimate(andFinal, tokens, 2);
+		s->Apply(andFinal, tokens, 2);
 
 		cond.GrowFromParseTree (andFinal, children[0]->outSchema, children[1]->outSchema, literal);
 	
@@ -345,6 +347,7 @@ string JoinNode::toString(){
 	cout<<"Left Input: "<<leftPipeID<<endl;
 	cout<<"Right Input: "<<rightPipeID<<endl;
 	cout<<"Out pipe: "<<outPipeID<<endl;
+	cout<<"Cost: "<<cost<<endl;
 	cout<<"Join CNF: "<<endl;
 		cond.Print();
 	cout<<"Output Schema: "<<endl;
