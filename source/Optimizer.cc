@@ -195,7 +195,7 @@ void TableNode::relatedSelectCNF(AndList *boolean, Statistics *s){
 		relName[0] =  tableAlias;
 		//cout<<relName[0];
 		cost = s->Estimate(andFinal, relName, 1);
-
+		s->Apply(andFinal, relName, 1);
 		cond.GrowFromParseTree (andFinal, outSchema, literal);
 		
 		
@@ -320,14 +320,19 @@ void JoinNode::relatedJoinCNF(AndList *boolean, Statistics *s){
 	
 	if(andFinal != NULL){
 		
-		//Record literal;
-		//need to check this!!!
+		
+		cost = s->Estimate(andFinal, NULL, 2);
+		s->Apply(andFinal, NULL, 2);
+
 		cond.GrowFromParseTree (andFinal, children[0]->outSchema, children[1]->outSchema, literal);
-
-		
-
+	
 	}else{
-		
+		char *tokens[2];
+		tokens[0] = leftSchema->GetAtts()[0].name;
+		tokens[1] = rightSchema->GetAtts()[0].name;
+
+		cost = s->Estimate(andFinal, tokens, 2);
+		s->Apply(andFinal, tokens, 2);
 	}
 
 

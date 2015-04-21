@@ -45,6 +45,7 @@ bool RelStat::attrExists(string attName){
 }
 
 int RelStat::getValue(string attName){
+	
 	unordered_map<string, int>::iterator i = attInfo.find(attName);
 	if( i == attInfo.end())
 		return -1;
@@ -206,12 +207,41 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 
 				string tableNameOfRight = getTableNameFromAttr(rightOperand->value);
 
-				if(tableNameOfLeft == "" && tableNameOfRight == ""){
-					printf("fatal error, attribute (%s,%s) not found in any table\n", leftOperand->value, rightOperand->value);
-					exit(1);
+				if(tableNameOfLeft == "" && tableNameOfRight == "" && numToJoin == 2){
+					// printf("fatal error, attribute (%s,%s) not found in any table\n", leftOperand->value, rightOperand->value);
+					// exit(1);
+					string tableNameOfLeft = getTableNameFromAttr(relNames[0]);
+					string tableNameOfRight = getTableNameFromAttr(relNames[1]);
+					
+					int tupLeft = relInfo[tableNameOfLeft]->getValue(relNames[0]) ;
+					int tupRight = relInfo[tableNameOfRight]->getValue(relNames[1]) ;
+
+					double cross = tupLeft * tupRight; 
+					
+					andFraction.push_back(cross);
+
+					unordered_map<string, int> joinedAttInfo;
+
+					for (auto it = relInfo[tableNameOfLeft]->attInfo.begin(); it != relInfo[tableNameOfLeft]->attInfo.end(); ++it){
+						joinedAttInfo[it->first] = it->second;
+					}
+
+					for (auto it = relInfo[tableNameOfRight]->attInfo.begin(); it != relInfo[tableNameOfRight]->attInfo.end(); ++it){
+						joinedAttInfo[it->first] = it->second;
+					}
+
+					RelStat *joinedStat = new RelStat();
+
+					joinedStat->attInfo = joinedAttInfo;
+					joinedTableName = tableNameOfLeft+"|"+tableNameOfRight;
+					relInfo[joinedTableName] = joinedStat;
+					relInfo.erase(tableNameOfRight);
+					relInfo.erase(tableNameOfLeft);
+					
+					break;
 				}
 				//estimate join
-				if(leftOperand->code == 4 && rightOperand->code == 4){
+				if(leftOperand->code == NAME && rightOperand->code == NAME){
 					hasJoin = true;
 					hasJoinInner = true;
 					int mul1 = relInfo[tableNameOfLeft]->numTuples;
@@ -244,11 +274,11 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 					break;
 				}else{
 					double f;
-					if(leftOperand->code == 4)
+					if(leftOperand->code == NAME)
 						f = 1.0/relInfo[tableNameOfLeft]->getValue(leftValue) ;
 					else
 						f = 1.0/relInfo[tableNameOfRight]->getValue(rightValue);
-					if(pCom->code != 3)
+					if(pCom->code != EQUALS)
 						f = (1.0/3);
 					
 					orFraction.push_back(f);
@@ -270,10 +300,10 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 			getAndListFraction(andFraction);
 
 		}
-		if(joinedTableName != "")
+		if(joinedTableName != ""){
 			relInfo[joinedTableName]->numTuples = getAndListFraction(andFraction);
 
-
+		}
 
 }
 
@@ -284,7 +314,7 @@ int max(int int1, int int2){
 
 double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numToJoin)
 {
-		cout<<"Estimating";
+		
 		struct AndList* andList = parseTree;
 		struct OrList* orList = NULL;
 		double result = 0.0;
@@ -309,12 +339,19 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
 
 				string tableNameOfRight = getTableNameFromAttr(rightOperand->value);
 
-				if(tableNameOfLeft == "" && tableNameOfRight == ""){
-					printf("fatal error, attribute (%s,%s) not found in any table\n", leftOperand->value, rightOperand->value);
-					exit(1);
+				if(tableNameOfLeft == "" && tableNameOfRight == "" && numToJoin == 2){
+					//printf("fatal error, attribute (%s,%s) not found in any table\n", leftOperand->value, rightOperand->value);
+					//exit(1);
+					string tableNameOfLeft = getTableNameFromAttr(relNames[0]);
+					string tableNameOfRight = getTableNameFromAttr(relNames[1]);
+					int tupLeft = relInfo[tableNameOfLeft]->getValue(relNames[0]) ;
+					int tupRight = relInfo[tableNameOfRight]->getValue(relNames[1]) ;
+
+					double cross = tupLeft * tupRight; 
+					andFraction.push_back(cross);
 				}
 				//estimate join
-				if(leftOperand->code == 4 && rightOperand->code == 4){
+				if(leftOperand->code == NAME && rightOperand->code == NAME){
 					hasJoin = true;
 					hasJoinInner = true;
 
@@ -333,11 +370,11 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
 					break;
 				}else{
 					double f;
-					if(leftOperand->code == 4)
+					if(leftOperand->code == NAME)
 						f = 1.0/relInfo[tableNameOfLeft]->getValue(leftValue) ;
 					else
 						f = 1.0/relInfo[tableNameOfRight]->getValue(rightValue);
-					if(pCom->code != 3)
+					if(pCom->code != EQUALS)
 						f = (1.0/3);
 					if(preLeftValue == leftValue){
 						orFraction[orFraction.size()-1] += f;
