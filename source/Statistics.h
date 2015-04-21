@@ -22,7 +22,7 @@ using namespace std;
 
 class RelStat{
 public:
-	int numTuples;
+	double numTuples;
 	unordered_map<string, int> attInfo;
 	RelStat(){}
 	RelStat(RelStat &copyMe){

@@ -178,7 +178,7 @@ double getAndListFraction(vector<double> andFraction){
 }
 
 
-int max(int int1, int int2){
+double max(double int1, double int2){
 	return int1>int2?int1:int2;
 }
 
@@ -256,14 +256,14 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 				if(leftOperand->code == NAME && rightOperand->code == NAME){
 					hasJoin = true;
 					hasJoinInner = true;
-					tableNameOfLeft = getTableNameFromAttr(relNames[0]);
-					tableNameOfRight = getTableNameFromAttr(relNames[1]);
-					int mul1 = relInfo[tableNameOfLeft]->numTuples;
-					int mul2 = relInfo[tableNameOfRight]->numTuples;
-					int dis1 = relInfo[tableNameOfLeft]->attInfo[leftValue];
-					int dis2 = relInfo[tableNameOfRight]->attInfo[rightValue];
+					//tableNameOfLeft = getTableNameFromAttr(leftOperand->value);
+					//tableNameOfRight = getTableNameFromAttr(rightOperand->value);
+					double mul1 = relInfo[tableNameOfLeft]->numTuples;
+					double mul2 = relInfo[tableNameOfRight]->numTuples;
+					double dis1 = relInfo[tableNameOfLeft]->attInfo[leftValue];
+					double dis2 = relInfo[tableNameOfRight]->attInfo[rightValue];
 					//in case causing integer overflow
-					double res = ((double)mul1/(double)max(dis1,dis2)) * mul2;
+					double res = (mul1/max(dis1,dis2)) * mul2;
 					andFraction.push_back(res);
 					//andList = andList->rightAnd;
 
@@ -310,12 +310,15 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 		if(!hasJoin){
 
 			string tableName(relNames[0]);
+			//int tup = relInfo[tableName]->numTuples;
 			andFraction.push_back(relInfo[tableName]->numTuples);
-
+			//cout<<relInfo[tableName]->numTuples<<" old";
+			//cout<<tableName<<" --- "<<getAndListFraction(andFraction);
 			relInfo[tableName]->numTuples = getAndListFraction(andFraction);
-
+			
 		}
 		if(joinedTableName != ""){
+
 			relInfo[joinedTableName]->numTuples = getAndListFraction(andFraction);
 			
 		}
@@ -377,19 +380,19 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
 					hasJoin = true;
 					hasJoinInner = true;
 
-					tableNameOfLeft = getTableNameFromAttr(relNames[0]);
-					tableNameOfRight = getTableNameFromAttr(relNames[1]);
+					//tableNameOfLeft = getTableNameFromAttr(relNames[0]);
+					//tableNameOfRight = getTableNameFromAttr(relNames[1]);
 					cout<<tableNameOfLeft<<" - "<<tableNameOfRight<<endl;
-					int mul1 = relInfo[tableNameOfLeft]->numTuples;
+					double mul1 = relInfo[tableNameOfLeft]->numTuples;
 
-					int mul2 = relInfo[tableNameOfRight]->numTuples;
+					double mul2 = relInfo[tableNameOfRight]->numTuples;
 
-					int dis1 = relInfo[tableNameOfLeft]->attInfo[leftValue];
+					double dis1 = relInfo[tableNameOfLeft]->attInfo[leftValue];
 
-					int dis2 = relInfo[tableNameOfRight]->attInfo[rightValue];
+					double dis2 = relInfo[tableNameOfRight]->attInfo[rightValue];
 
 					//in case causing integer overflow
-					double res = ((double)mul1/(double)max(dis1,dis2)) * mul2;
+					double res = (mul1/max(dis1,dis2)) * mul2;
 					
 					cout<<(double)mul1<<endl;
 					cout<<(double)mul2<<endl;
@@ -447,14 +450,14 @@ void Statistics::init(){
 	char *relName[] = {"nation", "region", "part", "customer", "lineitem", "orders", "supplier","partsupp"};
 	
 	//nation
-	AddRel(relName[0],25);	
+	AddRel(relName[0], 25);	
 	AddAtt(relName[0], "n_nationkey",25);
 	AddAtt(relName[0], "n_regionkey",5);
 	AddAtt(relName[0], "n_name",25);
 	
 	
 	//region
-	AddRel(relName[1],5);
+	AddRel(relName[1], 5);
 	AddAtt(relName[1], "r_regionkey",5);
 	AddAtt(relName[1], "r_name",5);
 	

@@ -26,6 +26,7 @@ Optimizer::Optimizer(Statistics *st){
 void Optimizer::planQuery(){
 
 	createTableNodes();
+	s->Write("a.txt");
 	createJoinNodes();
 	//createSumNodes();
 	traverse(planRoot);
@@ -194,11 +195,11 @@ void TableNode::relatedSelectCNF(AndList *boolean, Statistics *s){
 		char* relName[1];
 		relName[0] =  tableAlias;
 		//cout<<relName[0];
-		cost = s->Estimate(andFinal, relName, 1);
+		cost = s->Estimate(andFinal, relName, 1);	
 		s->Apply(andFinal, relName, 1);
 		cond.GrowFromParseTree (andFinal, outSchema, literal);
 		
-		s->Write("a.txt");
+		
 		
 
 	}else{
@@ -320,11 +321,9 @@ void JoinNode::relatedJoinCNF(AndList *boolean, Statistics *s){
 	
 	if(andFinal != NULL){
 		
-		char *tokens[2];
-		tokens[0] = leftSchema->GetAtts()[0].name;
-		tokens[1] = rightSchema->GetAtts()[0].name;
-		cost = s->Estimate(andFinal, tokens, 2);
-		s->Apply(andFinal, tokens, 2);
+		
+		cost = s->Estimate(andFinal, NULL, 2);
+		s->Apply(andFinal, NULL, 2);
 
 		cond.GrowFromParseTree (andFinal, children[0]->outSchema, children[1]->outSchema, literal);
 	
