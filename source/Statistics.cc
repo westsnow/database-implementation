@@ -177,6 +177,15 @@ double getAndListFraction(vector<double> andFraction){
 	return result;
 }
 
+double max(std::vector<double> v){
+	double m = -1;
+	for(int i =0; i<v.size(); i++){
+		if(v[i]>m){
+			m = v[i];
+		}
+	}
+	return m;
+}
 
 double max(double int1, double int2){
 	return int1>int2?int1:int2;
@@ -191,16 +200,18 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 		double fraction = 1.0;
 
 		bool hasJoin = false;
-
+		bool cross = false;
 		std::vector<double> andFraction;
+		std::vector<double> dis;
 		string joinedTableName = "";
-
+		string tableNameOfLeft;
+		string tableNameOfRight;
 		if(andList == NULL){
 
 			hasJoin = true;
-			
-			string tableNameOfLeft = getTableNameFromAttr(relNames[0]);
-			string tableNameOfRight = getTableNameFromAttr(relNames[1]);
+			cross = true;
+			tableNameOfLeft = getTableNameFromAttr(relNames[0]);
+			tableNameOfRight = getTableNameFromAttr(relNames[1]);
 			
 			int tupLeft = relInfo[tableNameOfLeft]->numTuples ;
 			int tupRight = relInfo[tableNameOfRight]->numTuples ;
@@ -209,24 +220,7 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 			
 			andFraction.push_back(cross);
 
-			unordered_map<string, int> joinedAttInfo;
-
-			for (auto it = relInfo[tableNameOfLeft]->attInfo.begin(); it != relInfo[tableNameOfLeft]->attInfo.end(); ++it){
-				joinedAttInfo[it->first] = it->second;
-			}
-
-			for (auto it = relInfo[tableNameOfRight]->attInfo.begin(); it != relInfo[tableNameOfRight]->attInfo.end(); ++it){
-				joinedAttInfo[it->first] = it->second;
-			}
-
-			RelStat *joinedStat = new RelStat();
-
-			joinedStat->attInfo = joinedAttInfo;
-			joinedTableName = tableNameOfLeft+"|"+tableNameOfRight;
-			relInfo[joinedTableName] = joinedStat;
-			relInfo.erase(tableNameOfRight);
-			relInfo.erase(tableNameOfLeft);
-
+			
 		}
 
 
@@ -241,9 +235,9 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 				struct Operand* rightOperand = pCom->right;
 				string leftValue(leftOperand->value);
 				string rightValue(rightOperand->value);
-				string tableNameOfLeft = getTableNameFromAttr(leftOperand->value);
+				tableNameOfLeft = getTableNameFromAttr(leftOperand->value);
 
-				string tableNameOfRight = getTableNameFromAttr(rightOperand->value);
+				tableNameOfRight = getTableNameFromAttr(rightOperand->value);
 
 				if(tableNameOfLeft == "" && tableNameOfRight == "" && numToJoin == 2){
 					printf("fatal error, attribute (%s,%s) not found in any table\n", leftOperand->value, rightOperand->value);
@@ -258,33 +252,15 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 					hasJoinInner = true;
 					//tableNameOfLeft = getTableNameFromAttr(leftOperand->value);
 					//tableNameOfRight = getTableNameFromAttr(rightOperand->value);
-					double mul1 = relInfo[tableNameOfLeft]->numTuples;
-					double mul2 = relInfo[tableNameOfRight]->numTuples;
+					
 					double dis1 = relInfo[tableNameOfLeft]->attInfo[leftValue];
+					dis.push_back(dis1);
 					double dis2 = relInfo[tableNameOfRight]->attInfo[rightValue];
 					//in case causing integer overflow
-					double res = (mul1/max(dis1,dis2)) * mul2;
-					andFraction.push_back(res);
+					dis.push_back(dis2);
 					//andList = andList->rightAnd;
 
-					unordered_map<string, int> joinedAttInfo;
-
-					for (auto it = relInfo[tableNameOfLeft]->attInfo.begin(); it != relInfo[tableNameOfLeft]->attInfo.end(); ++it){
-						joinedAttInfo[it->first] = it->second;
-					}
-
-					for (auto it = relInfo[tableNameOfRight]->attInfo.begin(); it != relInfo[tableNameOfRight]->attInfo.end(); ++it){
-						joinedAttInfo[it->first] = it->second;
-					}
-
-					RelStat *joinedStat = new RelStat();
-
-					joinedStat->attInfo = joinedAttInfo;
-					joinedTableName = tableNameOfLeft+"|"+tableNameOfRight;
-					relInfo[joinedTableName] = joinedStat;
-					relInfo.erase(tableNameOfRight);
-					relInfo.erase(tableNameOfLeft);
-
+					
 					break;
 				}else{
 					double f;
@@ -316,6 +292,35 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 			//cout<<tableName<<" --- "<<getAndListFraction(andFraction);
 			relInfo[tableName]->numTuples = getAndListFraction(andFraction);
 			
+		}else{
+
+			double mul1 = relInfo[tableNameOfLeft]->numTuples;
+			double mul2 = relInfo[tableNameOfRight]->numTuples;
+			if (!cross){
+				double res = (mul1/max(dis)) * mul2;
+				andFraction.push_back(res);
+			}
+			
+
+			unordered_map<string, int> joinedAttInfo;
+
+			for (auto it = relInfo[tableNameOfLeft]->attInfo.begin(); it != relInfo[tableNameOfLeft]->attInfo.end(); ++it){
+				joinedAttInfo[it->first] = it->second;
+			}
+
+			for (auto it = relInfo[tableNameOfRight]->attInfo.begin(); it != relInfo[tableNameOfRight]->attInfo.end(); ++it){
+				joinedAttInfo[it->first] = it->second;
+			}
+
+			RelStat *joinedStat = new RelStat();
+
+			joinedStat->attInfo = joinedAttInfo;
+			joinedTableName = tableNameOfLeft+"|"+tableNameOfRight;
+			relInfo[joinedTableName] = joinedStat;
+			relInfo.erase(tableNameOfRight);
+			relInfo.erase(tableNameOfLeft);
+
+
 		}
 		if(joinedTableName != ""){
 
@@ -336,15 +341,17 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
 		double fraction = 1.0;
 
 		bool hasJoin = false;
-
+		bool cross = false;
 		std::vector<double> andFraction;
-
+		std::vector<double> dis;
+		string tableNameOfLeft;
+		string tableNameOfRight;
 		if(andList == NULL){
-
+			cross = true;
 			hasJoin = true;
 			
-			string tableNameOfLeft = getTableNameFromAttr(relNames[0]);
-			string tableNameOfRight = getTableNameFromAttr(relNames[1]);
+			tableNameOfLeft = getTableNameFromAttr(relNames[0]);
+			tableNameOfRight = getTableNameFromAttr(relNames[1]);
 			int tupLeft = relInfo[tableNameOfLeft]->numTuples;
 			int tupRight = relInfo[tableNameOfRight]->numTuples ;
 
@@ -366,9 +373,9 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
 				struct Operand* rightOperand = pCom->right;
 				string leftValue(leftOperand->value);
 				string rightValue(rightOperand->value);
-				string tableNameOfLeft = getTableNameFromAttr(leftOperand->value);
+				tableNameOfLeft = getTableNameFromAttr(leftOperand->value);
 
-				string tableNameOfRight = getTableNameFromAttr(rightOperand->value);
+				tableNameOfRight = getTableNameFromAttr(rightOperand->value);
 
 				if(tableNameOfLeft == "" && tableNameOfRight == "" && numToJoin == 2){
 					printf("fatal error, attribute (%s,%s) not found in any table\n", leftOperand->value, rightOperand->value);
@@ -383,23 +390,14 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
 					//tableNameOfLeft = getTableNameFromAttr(relNames[0]);
 					//tableNameOfRight = getTableNameFromAttr(relNames[1]);
 					cout<<tableNameOfLeft<<" - "<<tableNameOfRight<<endl;
-					double mul1 = relInfo[tableNameOfLeft]->numTuples;
-
-					double mul2 = relInfo[tableNameOfRight]->numTuples;
+					
 
 					double dis1 = relInfo[tableNameOfLeft]->attInfo[leftValue];
-
+					dis.push_back(dis1);
 					double dis2 = relInfo[tableNameOfRight]->attInfo[rightValue];
-
+					dis.push_back(dis2);
 					//in case causing integer overflow
-					double res = (mul1/max(dis1,dis2)) * mul2;
 					
-					cout<<(double)mul1<<endl;
-					cout<<(double)mul2<<endl;
-					cout<<(double)max(dis1,dis2)<<endl;
-					
-
-					andFraction.push_back(res);
 					//andList = andList->rightAnd;
 					break;
 				}else{
@@ -431,6 +429,16 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
 		if(!hasJoin){
 			string tableName(relNames[0]);
 			andFraction.push_back(relInfo[tableName]->numTuples);
+		}
+		else{
+			double mul1 = relInfo[tableNameOfLeft]->numTuples;
+			double mul2 = relInfo[tableNameOfRight]->numTuples;
+			
+			if(!cross){
+				double res = (mul1/max(dis)) * mul2;
+				andFraction.push_back(res);	
+			}
+			
 		}
 		
 		return getAndListFraction(andFraction);

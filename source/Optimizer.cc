@@ -26,7 +26,6 @@ Optimizer::Optimizer(Statistics *st){
 void Optimizer::planQuery(){
 
 	createTableNodes();
-	s->Write("a.txt");
 	createJoinNodes();
 	//createSumNodes();
 	traverse(planRoot);
