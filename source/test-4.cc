@@ -136,7 +136,7 @@ void q0 (){
 void q1 (){
 
     Statistics s;
-        char *relName[] = {"lineitem"};
+    char *relName[] = {"lineitem"};
 
     s.AddRel(relName[0],6001215);
     s.AddAtt(relName[0], "l_returnflag",3);

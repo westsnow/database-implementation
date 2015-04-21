@@ -27,7 +27,7 @@ void Optimizer::planQuery(){
 
 	createTableNodes();
 	createJoinNodes();
-	//createSumNodes();
+	
 	traverse(planRoot);
 }
 
@@ -118,8 +118,10 @@ void Optimizer::createJoinNodes(){
 		
 		planRoot = prev;
 	}
-	
-	
+	//If root is still NULL after Join Nodes There is only one table in the query!
+	if(planRoot == NULL){
+		planRoot = tableNodes[0];
+	}
 
 }
 
