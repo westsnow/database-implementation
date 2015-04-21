@@ -10,13 +10,16 @@
 #include "ComparisonEngine.h"
 
 struct att_pair {
+	
 	char *name;
 	Type type;
+
 };
 struct Attribute {
 
 	char *name;
 	Type myType;
+
 };
 
 class OrderMaker;

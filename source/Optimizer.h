@@ -26,7 +26,7 @@ class Optimizer{
 		void planQuery();
 		void createTableNodes();
 		void createJoinNodes();
-		
+		void createSumNodes();		
 		
 };
 
@@ -35,7 +35,8 @@ class QueryPlanNode{
 	
 	public:
 		vector <QueryPlanNode*> children;
-		int cost;
+		double cost;
+		Schema *outSchema;
 
 		virtual string toString() = 0;
 
@@ -51,7 +52,7 @@ class TableNode : public QueryPlanNode {
 		char *tableAlias;
 		int outPipeID;
 		string fileName;
-		Schema *outSchema;
+		
 
 		void relatedSelectCNF(AndList *boolean, Statistics *s);
 		TableNode(char *name, char *alias, int outPipeID);
@@ -80,8 +81,7 @@ class JoinNode : public QueryPlanNode {
 		int outPipeID;
 		CNF cond;
 		Record literal;
-		Schema *outSchema;
-
+		
 		void relatedJoinCNF(AndList *boolean, Statistics *s);
 		JoinNode(int leftPipeID, int rightPipeID, int outPipeID);
 		string toString();

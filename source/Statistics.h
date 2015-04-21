@@ -58,10 +58,11 @@ public:
 	void Read(char *fromWhere);
 	void Write(char *fromWhere);
 
-	void  Apply(struct AndList *parseTree, char *relNames[], int numToJoin);
+		void  Apply(struct AndList *parseTree, char *relNames[], int numToJoin);
 	double Estimate(struct AndList *parseTree, char **relNames, int numToJoin);
 	void init();
 	string getTableNameFromAttr(string attrName);
+	void clearStats();
 private:
 	
 

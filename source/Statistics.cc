@@ -281,9 +281,11 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 int max(int int1, int int2){
 	return int1>int2?int1:int2;
 }
+
 double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numToJoin)
 {
-	struct AndList* andList = parseTree;
+		cout<<"Estimating";
+		struct AndList* andList = parseTree;
 		struct OrList* orList = NULL;
 		double result = 0.0;
 		double fraction = 1.0;
@@ -364,7 +366,15 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
 
 }
 
+void Statistics::clearStats(){
+
+	relInfo.clear();
+
+}
+
 void Statistics::init(){
+
+
 
 	char *relName[] = {"nation", "region", "part", "customer", "lineitem", "orders", "supplier","partsupp"};
 	

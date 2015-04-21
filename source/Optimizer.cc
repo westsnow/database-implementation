@@ -27,7 +27,15 @@ void Optimizer::planQuery(){
 
 	createTableNodes();
 	createJoinNodes();
+	//createSumNodes();
 	traverse(planRoot);
+}
+
+
+void Optimizer::createSumNodes(){
+
+
+
 }
 
 //Work left to do!!!!!!! 
@@ -72,7 +80,9 @@ void Optimizer::createJoinNodes(){
 			TableNode* right = tableNodes[i];
 			JoinNode *join = new JoinNode(prev->outPipeID, right->outPipeID, pipeid);
 			join->children.push_back(prev);
-			join->children.push_back(right);	
+			join->children.push_back(right);
+			//RelatedJoinCNF uses children! set them before use, I dont check that
+			join->relatedJoinCNF(boolean, s);	
 			pipeid += 1;
 			prev = join;
 		}
@@ -91,7 +101,9 @@ void Optimizer::createTableNodes(){
 	while(tmp != NULL){
 
 		s->CopyRel(tmp->tableName, tmp->aliasAs);
+
 		TableNode *t = new TableNode(tmp->tableName, tmp->aliasAs, pipeid);
+		
 		t->relatedSelectCNF(boolean, s);
 		//t->toString();
 		
@@ -178,13 +190,21 @@ void TableNode::relatedSelectCNF(AndList *boolean, Statistics *s){
 	
 	if(andFinal != NULL){
 		
-		//Record literal;
-		//need to check this!!!
-		cond.GrowFromParseTree (andFinal, outSchema, literal);
+		
+		char* relName[1];
+		relName[0] =  tableAlias;
+		//cout<<relName[0];
+		cost = s->Estimate(andFinal, relName, 1);
 
+		cond.GrowFromParseTree (andFinal, outSchema, literal);
+		
+		
 		
 
 	}else{
+		//s->Write("a.txt");
+		//cout<<alias;
+		cost = s->relInfo[alias]->numTuples;
 		/*
 			Do we need to create dummy CNF for all rows in table?
 		*/
@@ -208,8 +228,9 @@ void TableNode::relatedSelectCNF(AndList *boolean, Statistics *s){
 string TableNode::toString(){
 
 	cout<<"***************************"<<endl;
-	cout<<"Table "<<tableName<<" AS "<<tableAlias<<endl;
 	cout<<"Select From File Operation"<<endl;
+	cout<<"Table "<<tableName<<" AS "<<tableAlias<<endl;
+	cout<<"Cost: "<<cost<<endl;
 	cout<<"Input file: "<<endl;
 	cout<<"Output pipe Id: "<<outPipeID<<endl;
 	cout<<"Applied CNF: "<<endl;
@@ -231,7 +252,83 @@ JoinNode::JoinNode(int leftPipeID, int rightPipeID, int outPipeID){
 	this->outPipeID = outPipeID;
 	
 }
+
 void JoinNode::relatedJoinCNF(AndList *boolean, Statistics *s){
+	Schema *leftSchema = children[0]->outSchema;
+	Schema *rightSchema = children[1]->outSchema;
+
+	AndList *andTmp = boolean;
+	AndList *andFinal = NULL;
+	while(andTmp != NULL){
+
+		OrList *orList = andTmp->left;
+
+		while(orList != NULL){
+			struct ComparisonOp *pCom = orList->left;
+			struct Operand* leftOperand = pCom->left;
+			struct Operand* rightOperand = pCom->right;
+			
+
+			if(leftOperand->code == NAME && rightOperand->code == NAME){
+				// cout<<leftOperand->value<<endl;
+				// leftSchema->Print();
+				// cout<<rightOperand->value<<endl;
+				// rightSchema->Print();
+
+				if((leftSchema->Find(leftOperand->value) != -1 && rightSchema->Find(rightOperand->value)!= -1) || (leftSchema->Find(rightOperand->value) != -1 && rightSchema->Find(leftOperand->value)!= -1)){
+					//cout<<"Aqui 2"<<endl;
+					AndList *node = new AndList();
+					if(andFinal == NULL){
+						node->left = andTmp->left;
+						node->rightAnd = NULL;	
+					}
+					else{
+						node->rightAnd = andFinal;
+						node->left = andTmp->left;
+					}
+					andFinal = node;
+					break;
+				}
+			}
+			orList = orList->rightOr;
+		}
+		andTmp = andTmp->rightAnd;
+	}
+
+	//Merge Left and Right Schemas!
+
+	int leftNumAtts = children[0]->outSchema->GetNumAtts();
+	int rightNumAtts = children[1]->outSchema->GetNumAtts();
+	
+	int numAtts = leftNumAtts + rightNumAtts;
+	
+	Attribute* attsToKeep =  new Attribute[numAtts];
+
+	int i = 0;
+	Attribute *leftAtts = children[0]->outSchema->GetAtts();
+ 	for(int j = 0; j< leftNumAtts; j++){
+		attsToKeep[i] = leftAtts[j];
+		i += 1;
+	}
+	Attribute *rightAtts = children[1]->outSchema->GetAtts();
+ 	for(int j = 0; j< rightNumAtts; j++){
+		attsToKeep[i] = rightAtts[j];
+		i += 1;
+	}
+
+	outSchema = new Schema( "join" , numAtts, attsToKeep);
+	
+	if(andFinal != NULL){
+		
+		//Record literal;
+		//need to check this!!!
+		cond.GrowFromParseTree (andFinal, children[0]->outSchema, children[1]->outSchema, literal);
+
+		
+
+	}else{
+		
+	}
 
 
 
@@ -246,7 +343,7 @@ string JoinNode::toString(){
 	cout<<"Join CNF: "<<endl;
 		cond.Print();
 	cout<<"Output Schema: "<<endl;
-		//outSchema->Print();
+		outSchema->Print();
 }
 
 
