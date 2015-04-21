@@ -1,7 +1,7 @@
 (q1)
 
 SELECT SUM (ps.ps_supplycost), s.suppkey 
-FROM part AS p, supplier AS s, partsupp AS ps
+FROM partsupp AS ps, part AS p, supplier AS s
 WHERE (p.p_partkey = ps.ps_partkey) AND 
 	  (s.s_suppkey = ps.ps_suppkey) AND (s.s_acctbal > 2500.0) 
 GROUP BY s.s_suppkey
@@ -34,14 +34,14 @@ FROM customer AS c, orders AS o, lineitem AS l
 WHERE (c.c_custkey = o.o_custkey) AND 
       (o.o_orderkey = l.l_orderkey) AND
       (c.c_name = 'Customer#000070919') AND 
-	  (l.l_quantity > 30) AND (l.l_discount < 0.03)
+	  (l.l_quantity > 30.0) AND (l.l_discount < 0.03)
 
 
 (q6)
 
 SELECT l.l_orderkey 
 FROM lineitem AS l 
-WHERE (l.l_quantity > 30)
+WHERE (l.l_quantity > 30.0)
 
 
 (q7)

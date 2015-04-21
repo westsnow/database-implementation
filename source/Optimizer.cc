@@ -39,9 +39,38 @@ void Optimizer::createSumNodes(){
 }
 
 //Work left to do!!!!!!! 
-int evalOrder(vector<TableNode*> operands, Statistics *s, int minCost){
+double evalOrder(vector<TableNode*> tableNodes, Statistics *s, int minCost){
 	
-	return 0;
+	Statistics *temp_st = new Statistics(*(s));
+		int pipe = tableNodes.size();
+		if(tableNodes.size()>1){
+			TableNode* left = tableNodes[0];
+			TableNode* right = tableNodes[1];
+
+			JoinNode *prev = new JoinNode(left->outPipeID, right->outPipeID, pipe);
+			pipe += 1;
+			prev->children.push_back(left);
+			prev->children.push_back(right);
+			prev->relatedJoinCNF(boolean, temp_st);
+			//join->toString();
+			//join->children[0]->toString();
+			//join->children[1]->toString();
+			for(int i=2; i<tableNodes.size(); i++){
+				TableNode* right = tableNodes[i];
+				JoinNode *join = new JoinNode(prev->outPipeID, right->outPipeID, pipe);
+				join->children.push_back(prev);
+				join->children.push_back(right);
+				//RelatedJoinCNF uses children! set them before use, I dont check that
+				join->relatedJoinCNF(boolean, temp_st);	
+				pipe += 1;
+				prev = join;
+			}
+			
+			return prev->cost;
+		
+		}
+
+	return 1;
 
 }
 
