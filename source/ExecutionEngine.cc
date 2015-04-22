@@ -1,6 +1,6 @@
 
 #include "ExecutionEngine.h"
-
+#include "Optimizer.h"
 #include "Optimizer.h"
 
 extern char *newtable;
@@ -49,11 +49,14 @@ void ExecutionEngine::setOutput(char *mode){
 
 void ExecutionEngine::select(){
 
-	cout <<"Select from where ....";
+	Optimizer *optimizer = new Optimizer(s);
+
+	optimizer->planQuery();
 
 }
  void ExecutionEngine::clear(){
- 	cout<<"Clearing";
+ 	
+ 	
 
  }
 

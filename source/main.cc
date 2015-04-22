@@ -63,9 +63,9 @@ int main()
 		engine->execute();
 		//optimizer->planQuery();
 		
-		if(bye){
+		//if(bye){
 			run = false;
-		}
+		//}
 
 	}
 	s->Write(statistics_dir);
