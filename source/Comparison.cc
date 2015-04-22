@@ -69,6 +69,16 @@ OrderMaker :: OrderMaker() {
 	numAtts = 0;
 }
 
+void OrderMaker::growFromParseTree(NameList* gAtts, Schema* inputSchema) {
+  for(; gAtts; gAtts = gAtts->next, numAtts++) {
+    if((whichAtts[numAtts] = inputSchema->Find(gAtts->name))==-1){
+        printf("Grouping by non-existing attribute\n");
+        exit(1);
+    }
+    whichTypes[numAtts] = inputSchema->FindType(gAtts->name);
+  }
+}
+
 OrderMaker :: OrderMaker(Schema *schema) {
 	numAtts = 0;
 

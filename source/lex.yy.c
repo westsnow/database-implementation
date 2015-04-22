@@ -912,29 +912,29 @@ case 21:
 YY_RULE_SETUP
 #line 78 "./source/Lexer.l"
 {yylval.actualChars = strdup(yytext);
-  			return(Int); 
-		        }
+        return(Int); 
+            }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
 #line 82 "./source/Lexer.l"
 {yylval.actualChars = strdup(yytext); 
-  			return(Float);
-			}
+        return(Float);
+      }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
 #line 86 "./source/Lexer.l"
 {yylval.actualChars = strdup(yytext);
-  			return(Name);
-			}     
+        return(Name);
+      }     
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
 #line 90 "./source/Lexer.l"
 {yylval.actualChars = strdup(yytext);
-  			return(Name);
-			}     
+        return(Name);
+      }     
 	YY_BREAK
 case 25:
 YY_RULE_SETUP

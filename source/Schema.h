@@ -47,6 +47,9 @@ public:
 	// returns a -1 if the attribute is not present in the schema
 	int Find (char *attName);
 
+	//copy constructor
+	Schema (const Schema& sch);
+
 	// this finds the type of the given attribute
 	Type FindType (char *attName);
 
@@ -57,7 +60,6 @@ public:
 	Schema (char *fName, int num_atts, Attribute *atts);
 
 	Schema (char *fName, char *relName, char *alias);
-
 
 	// this constructs a sort order structure that can be used to
 	// place a lexicographic ordering on the records using this type of schema

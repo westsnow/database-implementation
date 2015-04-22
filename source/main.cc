@@ -16,6 +16,7 @@ extern struct TableList *tables;
 
 int main()
 {
+
 	bool run = true;
 	Statistics *s = new Statistics();
 	Optimizer *optimizer = new Optimizer(s);

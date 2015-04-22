@@ -7,6 +7,19 @@ Function :: Function () {
 	opList = new Arithmatic[MAX_DEPTH];
 }
 
+void printParseTree(struct FuncOperator* parseTree){
+	if(parseTree == NULL){
+		return;
+	}else{
+		printParseTree(parseTree->leftOperator);
+		printParseTree(parseTree->right);
+	}
+	if(parseTree->leftOperand == NULL){
+			cout<<"leftOperand is null"<<endl;
+	}else
+		cout<<parseTree->leftOperand->code<<" "<<parseTree->leftOperand->value<<endl;
+}
+
 Type Function :: RecursivelyBuild (struct FuncOperator *parseTree, Schema &mySchema) {
 
 	// different cases; in the first case, simple, unary operation
@@ -185,7 +198,6 @@ Type Function :: RecursivelyBuild (struct FuncOperator *parseTree, Schema &mySch
 }
 
 void Function :: GrowFromParseTree (struct FuncOperator *parseTree, Schema &mySchema) {
-
 	// zero out the list of operrations
 	numOps = 0;
 
@@ -203,6 +215,7 @@ void Function :: GrowFromParseTree (struct FuncOperator *parseTree, Schema &mySc
 void Function :: Print () {
 
 }
+
 
 Type Function :: Apply (Record &toMe, int &intResult, double &doubleResult) {
 

@@ -57,6 +57,7 @@ public:
 	// create an OrderMaker that can be used to sort records
 	// based upon ALL of their attributes
 	OrderMaker(Schema *schema);
+    void growFromParseTree(NameList* gAtts, Schema* inputSchema); 
 
 	
 	// print to the screen

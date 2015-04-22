@@ -26,8 +26,9 @@ class Optimizer{
 		void planQuery();
 		void createTableNodes();
 		void createJoinNodes();
-		void createSumNodes();		
-		
+		void createSumNodes();	
+		void createProjectNodes();	
+		void createDistinctNodes();
 };
 
 
@@ -37,6 +38,7 @@ class QueryPlanNode{
 		vector <QueryPlanNode*> children;
 		double cost;
 		Schema *outSchema;
+		int outPipeID;
 
 		virtual string toString() = 0;
 
@@ -50,7 +52,6 @@ class TableNode : public QueryPlanNode {
 		Record literal;
 		char *tableName;
 		char *tableAlias;
-		int outPipeID;
 		string fileName;
 		
 
@@ -64,12 +65,11 @@ class TableNode : public QueryPlanNode {
 class ProjectNode : public QueryPlanNode { 
 	public:
 		int *keepMe;
-		int numAttsInput;
-		int numAttsOutput;	
+		int numAttsIn;
+		int numAttsOut;	
 
 		int inPipeID;
-		int outPipeID;
-		
+		ProjectNode(NameList* atts, QueryPlanNode* root, int pipeid);
 		string toString(); 
 };
 
@@ -78,7 +78,6 @@ class JoinNode : public QueryPlanNode {
 	public:
 		int rightPipeID;
 		int leftPipeID;
-		int outPipeID;
 		CNF cond;
 		Record literal;
 		
@@ -90,8 +89,7 @@ class JoinNode : public QueryPlanNode {
 class DuplicateRemovalNode : public QueryPlanNode {
 	public:
 		int inPipeID;
-		int outPipeID;
-		Schema mySchema;
+		DuplicateRemovalNode(QueryPlanNode* root, int outPipeID);
 
 		string toString();		
 };
@@ -99,9 +97,8 @@ class DuplicateRemovalNode : public QueryPlanNode {
 class SumNode : public QueryPlanNode {
 	public:
 		int inPipeID;
-		int outPipeID;
 		Function computeMe;
-
+		SumNode(struct FuncOperator* parseTree, QueryPlanNode* root, int outPipeID);
 		string toString();	
 };
 
@@ -109,10 +106,9 @@ class GroupByNode : public QueryPlanNode {
 	
 	public:
 		int inPipeID;
-		int outPipe;
-		OrderMaker groupAtts;
+		OrderMaker groupOrder;
 		Function computeMe;
-
+		GroupByNode(struct NameList* nameList, struct FuncOperator* parseTree, QueryPlanNode* root, int outPipeID);
 		string toString();
 };
 

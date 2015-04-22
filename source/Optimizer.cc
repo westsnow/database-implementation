@@ -3,6 +3,83 @@
 #include <iostream>
 #include <vector>
 
+void PrintOperand(struct Operand *pOperand)
+{
+        if(pOperand!=NULL)
+        {
+                cout<<pOperand->value<<" ";
+                cout<<" ("<<pOperand->code<<") ";
+        }
+        else
+                return;
+}
+
+void PrintComparisonOp(struct ComparisonOp *pCom)
+{
+        if(pCom!=NULL)
+        {
+                PrintOperand(pCom->left);
+                switch(pCom->code)
+                {
+                        case 1:
+                                cout<<" < "; break;
+                        case 2:
+                                cout<<" > "; break;
+                        case 3:
+                                cout<<" = ";
+                }
+                PrintOperand(pCom->right);
+
+        }
+        else
+        {
+                return;
+        }
+}
+void PrintOrList(struct OrList *pOr)
+{
+        if(pOr !=NULL)
+        {
+                struct ComparisonOp *pCom = pOr->left;
+                PrintComparisonOp(pCom);
+
+                if(pOr->rightOr)
+                {
+                        cout<<" OR ";
+                        PrintOrList(pOr->rightOr);
+                }
+        }
+        else
+        {
+                return;
+        }
+}
+void PrintAndList(struct AndList *pAnd)
+{
+        if(pAnd !=NULL)
+        {
+                struct OrList *pOr = pAnd->left;
+                PrintOrList(pOr);
+                if(pAnd->rightAnd)
+                {
+                        cout<<" AND ";
+                        PrintAndList(pAnd->rightAnd);
+                }
+        }
+        else
+        {
+                return;
+        }
+}
+void PrintNameList(struct  NameList* list){
+	if(list == NULL){
+		cout<<"print done"<<endl;
+	}else{
+		cout<<list->name<<endl;
+		list = list->next;
+		PrintNameList(list);
+	}
+}
 
 // from parser
 extern FuncOperator* finalFunction;
@@ -13,29 +90,48 @@ extern NameList* attsToSelect;
 extern int distinctAtts;
 extern int distinctFunc;
 
-char* catalog_path = "/Users/Migue/Documents/DBIDATA/catalog";
+char* catalog_path = "/Users/westsnow/GitHub/database-implementation/source/catalog";
+// char* catalog_path = "/Users/Migue/Documents/DBIDATA/catalog";
 int pipeid = 1;
 using namespace std;
 
 Optimizer::Optimizer(Statistics *st){
+
 	s = st;
 	s->init();
 	planRoot = NULL;
 }
 
 void Optimizer::planQuery(){
+	
+	// // PrintAndList(boolean);
+	// cout<<distinctAtts<<endl;
+	// cout<<distinctFunc<<endl;
+	// // PrintOperand(finalFunction->code);
+
 
 	createTableNodes();
 	createJoinNodes();
-	
+	createSumNodes();
+	createProjectNodes();
+	createDistinctNodes();
+
+	// cout<<"before printing"<<endl;
+	// cout<<distinctAtts<<endl;
+	// cout<<distinctFunc<<endl;
+	// if(finalFunction){
+	// 	cout<<"has final function"<<endl;
+
+	// }else{
+	// 	cout<<"no finalFunction"<<endl;
+	// }
+	// PrintNameList(groupingAtts);
+	// // Function f;
+	// // f.GrowFromParseTree (finalFunction, *(planRoot->outSchema)) ;
+	// // f.Print();
+	// cout<<"after printing"<<endl;
+
 	traverse(planRoot);
-}
-
-
-void Optimizer::createSumNodes(){
-
-
-
 }
 
 //Work left to do!!!!!!! 
@@ -73,6 +169,8 @@ double evalOrder(vector<TableNode*> tableNodes, Statistics *s, int minCost){
 	return 1;
 
 }
+
+
 
 void Optimizer::createJoinNodes(){
 
@@ -125,6 +223,18 @@ void Optimizer::createJoinNodes(){
 
 }
 
+
+void Optimizer::createDistinctNodes() {
+  if (distinctAtts) 
+  	planRoot = new DuplicateRemovalNode(planRoot, pipeid++);
+}
+
+void Optimizer::createProjectNodes() {
+  if (attsToSelect && !finalFunction && !groupingAtts) 
+  	planRoot = new ProjectNode(attsToSelect, planRoot, pipeid++);
+}
+
+
 void Optimizer::createTableNodes(){
 	
 	
@@ -146,18 +256,141 @@ void Optimizer::createTableNodes(){
 
 }
 
-void Optimizer::traverse(QueryPlanNode *root){
-	
-	if(!root->children.empty()){
-		if(root->children.size() == 2){
-			traverse(root->children[0]);
-			root->toString();
-			traverse(root->children[1]);
+// void QueryPlan::makeSums() {
+//   if (groupingAtts) {
+//     FATALIF (!finalFunction, "Grouping without aggregation functions!");
+//     FATALIF (distinctAtts, "No dedup after aggregate!");
+//     if (distinctFunc) root = new DedupNode(root);
+//     root = new GroupByNode(groupingAtts, finalFunction, root);
+//   } else if (finalFunction) {
+//     root = new SumNode(finalFunction, root);
+//   }
+// }
+
+
+
+void Optimizer::createSumNodes(){
+	if(groupingAtts){
+		if(!finalFunction){
+			cout<<"no grouping attributes error"<<endl;
+			exit(1);
 		}
-	}else{
-		root->toString();
+		planRoot = new GroupByNode(groupingAtts, finalFunction, planRoot, pipeid++);
+	}else if(finalFunction){
+		cout<<"create sum"<<endl;
+		planRoot = new SumNode(finalFunction, planRoot, pipeid++);
+	}
+}
+
+void Optimizer::traverse(QueryPlanNode *root){
+	root->toString();
+	for(int i = 0; i < root->children.size(); ++i){
+		traverse(root->children[i]);
+	}
+}
+
+// void Optimizer::traverse(QueryPlanNode *root){
+// 	cout<<"traverse"<<endl;
+// 	if(!root->children.empty()){
+// 		if(root->children.size() == 2){
+// 			traverse(root->children[0]);
+// 			root->toString();
+// 			traverse(root->children[1]);
+// 		}
+// 	}else{
+// 		root->toString();
+// 	}
+// }
+
+
+DuplicateRemovalNode::DuplicateRemovalNode(QueryPlanNode* root, int outPipeID){
+	this->outPipeID = outPipeID;
+	children.push_back(root);
+	outSchema = new Schema(*(root->outSchema));
+}
+
+ProjectNode::ProjectNode(NameList* atts, QueryPlanNode* root, int pipeid){
+	this->outPipeID = pipeid;
+	children.push_back(root);
+	numAttsIn = root->outSchema->GetNumAtts();
+	numAttsOut = 0;
+
+	Schema* cSchema = root->outSchema;
+  	Attribute resultAtts[100];
+  	for (; atts; atts=atts->next, numAttsOut++) {
+   	 resultAtts[numAttsOut].name = atts->name;
+   	 resultAtts[numAttsOut].myType = cSchema->FindType(atts->name);
+  	}
+ 	outSchema = new Schema ("", numAttsOut, resultAtts);
+}
+
+// void printParseTree(struct FuncOperator* parseTree){
+// 	if(parseTree == NULL){
+// 		return;
+// 	}else{
+// 		printParseTree(parseTree->leftOperator);
+// 		printParseTree(parseTree->right);
+// 	}
+// 	if(parseTree->leftOperand == NULL){
+// 			cout<<"leftOperand is null"<<endl;
+// 	}else
+// 		cout<<parseTree->leftOperand->code<<" "<<parseTree->leftOperand->value<<endl;
+// }
+SumNode::SumNode(struct FuncOperator* parseTree, QueryPlanNode* root, int outPipeID){
+	computeMe.GrowFromParseTree (parseTree, *root->outSchema);
+	this->outPipeID = outPipeID;
+	children.push_back(root);
+  	Attribute atts[2][1] = {{{"sum", Int}}, {{"sum", Double}}};
+  	outSchema = new Schema ("", 1, atts[computeMe.resultType()]);
+}
+
+
+
+GroupByNode::GroupByNode(struct NameList* nameList, struct FuncOperator* parseTree, QueryPlanNode* root, int outPipeID){
+	groupOrder.growFromParseTree(nameList, root->outSchema);
+	computeMe.GrowFromParseTree (parseTree, *(root->outSchema));
+	this->outPipeID = outPipeID;
+	children.push_back(root);
+
+
+
+	vector<char*>input;
+
+	struct NameList * tempgroup=groupingAtts;
+
+	while(tempgroup!=NULL)
+	{
+		input.push_back(tempgroup->name);
+		tempgroup=tempgroup->next;
+	}
+	// temp->nodeAndList = CreateAndList(input);
+	// temp->nodeCnf = new CNF();
+	// temp->nodeLiteral = new Record();
+	// OrderMaker dummy;
+
+	// temp->nodeCnf->GrowFromParseTree(temp->nodeAndList, root->nodeSchema, *(temp->nodeLiteral));
+	// temp->groupAtts = new OrderMaker;
+	// temp->nodeCnf->GetSortOrders(*(temp->groupAtts), dummy);
+
+	int totatts=input.size();
+	totatts++;
+	Attribute * attrlist=new Attribute[totatts];
+	attrlist[0].myType=Double;
+	attrlist[0].name="SUM";
+	tempgroup=groupingAtts;
+	int i=1;
+	while(tempgroup!=NULL)
+	{
+		attrlist[i].name=tempgroup->name;
+		attrlist[i].myType=root->outSchema->FindType(tempgroup->name);
+		i++;
+		tempgroup=tempgroup->next;
 	}
 
+	outSchema=new Schema("catalog",totatts,attrlist);
+
+
+	// outSchema = createShema(nameList, parseTree, root);
 }
 
 
@@ -281,7 +514,6 @@ JoinNode::JoinNode(int leftPipeID, int rightPipeID, int outPipeID){
 	this->leftPipeID = leftPipeID;
 	this->rightPipeID = rightPipeID;
 	this->outPipeID = outPipeID;
-	
 }
 
 void JoinNode::relatedJoinCNF(AndList *boolean, Statistics *s){
@@ -368,6 +600,53 @@ void JoinNode::relatedJoinCNF(AndList *boolean, Statistics *s){
 
 
 
+}
+string GroupByNode::toString(){
+	cout<<"***************************"<<endl;
+	cout<<"GroupBy Operation"<<endl;
+	cout<<"child Input: "<<children[0]->outPipeID<<endl;
+	cout<<"Out pipe: "<<outPipeID<<endl;
+	// cout<<"Cost: "<<cost<<endl;
+	cout<<"Function: "<<endl;
+	computeMe.Print();
+	cout<<"OrderMaker "<<endl;
+	groupOrder.Print();
+	cout<<"outSchema "<<endl;
+	outSchema->Print();
+	return "";
+}
+string SumNode::toString(){
+	cout<<"***************************"<<endl;
+	cout<<"Sum Operation"<<endl;
+	cout<<"child Input: "<<children[0]->outPipeID<<endl;
+	cout<<"Out pipe: "<<outPipeID<<endl;
+	// cout<<"Cost: "<<cost<<endl;
+	cout<<"Function: "<<endl;
+	computeMe.Print();
+	cout<<"outSchema "<<endl;
+	outSchema->Print();
+
+	return "";
+}
+string ProjectNode::toString(){
+	cout<<"***************************"<<endl;
+	cout<<"Project Operation"<<endl;
+	cout<<"child Input: "<<children[0]->outPipeID<<endl;
+	cout<<"Out pipe: "<<outPipeID<<endl;
+	// cout<<"Cost: "<<cost<<endl;
+	cout<<"outSchema "<<endl;
+	outSchema->Print();
+	return "";
+}
+string DuplicateRemovalNode::toString(){
+	cout<<"***************************"<<endl;
+	cout<<"Distinct Operation"<<endl;
+	cout<<"child Input: "<<children[0]->outPipeID<<endl;
+	cout<<"Out pipe: "<<outPipeID<<endl;
+	// cout<<"Cost: "<<cost<<endl;
+	cout<<"outSchema "<<endl;
+	outSchema->Print();
+	return "";
 }
 string JoinNode::toString(){
 
