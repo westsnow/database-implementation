@@ -60,7 +60,7 @@ int main()
 		cout<<"sql>> ";
 		yyparse();
 		
-		engine->execute();
+		engine->select();
 		//optimizer->planQuery();
 		
 		//if(bye){

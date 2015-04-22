@@ -2,9 +2,16 @@
 #define OPTIMIZER_H
 #include <string>
 #include <vector>
+#include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
+#include <math.h>
+
+
 #include "Comparison.h"
 #include "Function.h"
 #include "Statistics.h"
+#include "RelOp.h"
 
 
 using namespace std;
@@ -24,11 +31,13 @@ class Optimizer{
 
 		void traverse(QueryPlanNode *root);
 		void planQuery();
+		void executeQuery();
 		void createTableNodes();
 		void createJoinNodes();
 		void createSumNodes();	
 		void createProjectNodes();	
 		void createDistinctNodes();
+		void createWriteOutNodes(string fileName);
 };
 
 
@@ -39,7 +48,7 @@ class QueryPlanNode{
 		double cost;
 		Schema *outSchema;
 		int outPipeID;
-
+  		virtual void execute(Pipe** pipes, RelationalOp** relops) = 0;
 		virtual string toString() = 0;
 
 };
@@ -53,21 +62,22 @@ class TableNode : public QueryPlanNode {
 		char *tableName;
 		char *tableAlias;
 		string fileName;
-		
+		DBFile dbFile;
 
+		void execute(Pipe** pipes, RelationalOp** relops);
 		void relatedSelectCNF(AndList *boolean, Statistics *s);
 		TableNode(char *name, char *alias, int outPipeID);
 		string toString();
-
 };
 
 //Project Node
 class ProjectNode : public QueryPlanNode { 
 	public:
-		int *keepMe;
+		int keepMe[100];
 		int numAttsIn;
 		int numAttsOut;	
 
+		void execute(Pipe** pipes, RelationalOp** relops);
 		int inPipeID;
 		ProjectNode(NameList* atts, QueryPlanNode* root, int pipeid);
 		string toString(); 
@@ -81,6 +91,8 @@ class JoinNode : public QueryPlanNode {
 		CNF cond;
 		Record literal;
 		
+		void execute(Pipe** pipes, RelationalOp** relops);
+
 		void relatedJoinCNF(AndList *boolean, Statistics *s);
 		JoinNode(int leftPipeID, int rightPipeID, int outPipeID);
 		string toString();
@@ -90,6 +102,7 @@ class DuplicateRemovalNode : public QueryPlanNode {
 	public:
 		int inPipeID;
 		DuplicateRemovalNode(QueryPlanNode* root, int outPipeID);
+		void execute(Pipe** pipes, RelationalOp** relops);
 
 		string toString();		
 };
@@ -100,6 +113,7 @@ class SumNode : public QueryPlanNode {
 		Function computeMe;
 		SumNode(struct FuncOperator* parseTree, QueryPlanNode* root, int outPipeID);
 		string toString();	
+		void execute(Pipe** pipes, RelationalOp** relops);
 };
 
 class GroupByNode : public QueryPlanNode {
@@ -110,13 +124,17 @@ class GroupByNode : public QueryPlanNode {
 		Function computeMe;
 		GroupByNode(struct NameList* nameList, struct FuncOperator* parseTree, QueryPlanNode* root, int outPipeID);
 		string toString();
+		void execute(Pipe** pipes, RelationalOp** relops) ;
+
 };
 
 class WriteOutNode : public QueryPlanNode {
 	public:
 		int inPipe;
 		string outFileName;
-		Schema mySchema;
+
+		WriteOutNode(QueryPlanNode* root, int outPipeID, string fileName);
+		void execute(Pipe** pipes, RelationalOp** relops) ;
 
 		string toString();
 	

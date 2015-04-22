@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 
+int const PIPE_SIZE = 100;
 
 void PrintOperand(struct Operand *pOperand)
 {
@@ -91,7 +92,7 @@ extern NameList* groupingAtts;
 extern NameList* attsToSelect;
 extern int distinctAtts;
 extern int distinctFunc;
-
+extern char* dbfile_dir;
 //from main
 extern char *catalog_path;
 
@@ -105,6 +106,14 @@ Optimizer::Optimizer(Statistics *st){
 	//s->init();
 	planRoot = NULL;	
 
+}
+void Optimizer::executeQuery(){
+	int numNodes = planRoot->outPipeID;
+    Pipe** pipes = new Pipe*[numNodes+5];
+    RelationalOp** relops = new RelationalOp*[numNodes+5];
+    planRoot->execute(pipes, relops);
+    for (int i=0; i<numNodes; ++i)
+      relops[i] -> WaitUntilDone();
 }
 
 void Optimizer::planQuery(){
@@ -120,7 +129,7 @@ void Optimizer::planQuery(){
 	createSumNodes();
 	createProjectNodes();
 	createDistinctNodes();
-
+	createWriteOutNodes("stdout");
 	// cout<<"before printing"<<endl;
 	// cout<<distinctAtts<<endl;
 	// cout<<distinctFunc<<endl;
@@ -175,8 +184,6 @@ double evalOrder(vector<TableNode*> tableNodes, Statistics *s, int minCost){
 
 }
 
-
-
 void Optimizer::createJoinNodes(){
 
 	std::vector<TableNode*> tableList(tableNodes);
@@ -228,6 +235,9 @@ void Optimizer::createJoinNodes(){
 
 }
 
+void Optimizer::createWriteOutNodes(string fileName) {
+	planRoot = new WriteOutNode(planRoot, pipeid++, fileName);
+}
 
 void Optimizer::createDistinctNodes() {
   if (distinctAtts) 
@@ -323,6 +333,9 @@ ProjectNode::ProjectNode(NameList* atts, QueryPlanNode* root, int pipeid){
 	Schema* cSchema = root->outSchema;
   	Attribute resultAtts[100];
   	for (; atts; atts=atts->next, numAttsOut++) {
+  		if(  (keepMe[numAttsOut]=cSchema->Find(atts->name))==-1 ){
+  			printf("Projected attributes not exist\n");
+		}
    	 resultAtts[numAttsOut].name = atts->name;
    	 resultAtts[numAttsOut].myType = cSchema->FindType(atts->name);
   	}
@@ -349,7 +362,12 @@ SumNode::SumNode(struct FuncOperator* parseTree, QueryPlanNode* root, int outPip
   	outSchema = new Schema ("", 1, atts[computeMe.resultType()]);
 }
 
-
+WriteOutNode::WriteOutNode(QueryPlanNode* root, int outPipeID, string fileName){
+	this->outPipeID = outPipeID;
+	children.push_back(root);
+	outSchema = new Schema(*(root->outSchema));
+	outFileName = fileName;
+}
 
 GroupByNode::GroupByNode(struct NameList* nameList, struct FuncOperator* parseTree, QueryPlanNode* root, int outPipeID){
 	groupOrder.growFromParseTree(nameList, root->outSchema);
@@ -653,6 +671,16 @@ string DuplicateRemovalNode::toString(){
 	outSchema->Print();
 	return "";
 }
+string WriteOutNode::toString(){
+	cout<<"***************************"<<endl;
+	cout<<"WriteOut Operation"<<endl;
+	cout<<"child Input: "<<children[0]->outPipeID<<endl;
+	cout<<"Out pipe: "<<outPipeID<<endl;
+	// cout<<"Cost: "<<cost<<endl;
+	cout<<"outSchema "<<endl;
+	outSchema->Print();
+	return "";
+}
 string JoinNode::toString(){
 
 	cout<<"***************************"<<endl;
@@ -666,5 +694,70 @@ string JoinNode::toString(){
 	cout<<"Output Schema: "<<endl;
 		outSchema->Print();
 }
+
+void TableNode::execute(Pipe** pipes, RelationalOp** relops){
+  string dbName = string(tableName) + ".bin";
+  string finalPath = string(dbfile_dir) + dbName;
+  dbFile.Open((char*)finalPath.c_str());
+  SelectFile* sf = new SelectFile();
+  pipes[outPipeID] = new Pipe(PIPE_SIZE);
+  relops[outPipeID] = sf;
+  sf->Run(dbFile, *(pipes[outPipeID]), cond, literal);
+}
+
+void ProjectNode::execute(Pipe** pipes, RelationalOp** relops){
+	Project* p = new Project();
+	children[0] -> execute(pipes, relops);
+	pipes[outPipeID] = new Pipe(PIPE_SIZE);
+	relops[outPipeID] = p;
+	p -> Run( *pipes[children[0]->outPipeID], *pipes[outPipeID], keepMe, numAttsIn, numAttsOut );
+}
+
+
+void JoinNode::execute(Pipe** pipes, RelationalOp** relops){
+	children[0]->execute(pipes, relops);
+	children[1]->execute(pipes, relops);
+	Join * j = new Join();
+	pipes[outPipeID] = new Pipe(PIPE_SIZE);
+  	relops[outPipeID] = j;
+  	j -> Run(*pipes[children[0]->outPipeID], *pipes[children[1]->outPipeID], *pipes[outPipeID], cond, literal);
+}
+
+
+void DuplicateRemovalNode::execute(Pipe** pipes, RelationalOp** relops){
+	children[0]->execute(pipes, relops);
+	DuplicateRemoval * dr = new DuplicateRemoval();
+	pipes[outPipeID] = new Pipe(PIPE_SIZE);
+	relops[outPipeID] = dr;
+	dr->Run(*pipes[children[0]->outPipeID], *pipes[outPipeID], *outSchema);
+}
+
+
+void SumNode::execute(Pipe** pipes, RelationalOp** relops){
+	children[0]->execute(pipes, relops);
+	Sum * s = new Sum();
+	pipes[outPipeID] = new Pipe(PIPE_SIZE);
+	relops[outPipeID] = s;
+	s->Run(*pipes[children[0]->outPipeID], *pipes[outPipeID], computeMe);
+}
+
+//void Run (Pipe &inPipe, Pipe &outPipe, OrderMaker &groupAtts, Function &computeMe);
+void GroupByNode::execute(Pipe** pipes, RelationalOp** relops){
+	children[0]->execute(pipes, relops);
+	GroupBy * gb = new GroupBy();
+	pipes[outPipeID] = new Pipe(PIPE_SIZE);
+	relops[outPipeID] = gb;
+	gb->Run(*pipes[children[0]->outPipeID], *pipes[outPipeID], groupOrder,computeMe);
+}
+
+//	void Run (Pipe &inPipe, FILE *outFile, Schema &mySchema);
+void WriteOutNode::execute(Pipe** pipes, RelationalOp** relops){
+	children[0]->execute(pipes, relops);
+	WriteOut * wo = new WriteOut();
+	relops[outPipeID] = wo;	
+	FILE *writefile = fopen ((char*)outFileName.c_str(), "w");
+	wo->Run(*pipes[children[0]->outPipeID], writefile, *outSchema);
+}
+
 
 

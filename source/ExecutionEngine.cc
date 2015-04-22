@@ -50,8 +50,8 @@ void ExecutionEngine::setOutput(char *mode){
 void ExecutionEngine::select(){
 
 	Optimizer *optimizer = new Optimizer(s);
-
 	optimizer->planQuery();
+  optimizer->executeQuery();
 
 }
  void ExecutionEngine::clear(){
