@@ -52,7 +52,16 @@
      SUM = 268,
      AS = 269,
      AND = 270,
-     OR = 271
+     OR = 271,
+     BYE = 272,
+     CREATE = 273,
+     TABLE = 274,
+     HEAP = 275,
+     INSERT = 276,
+     INTO = 277,
+     SET = 278,
+     OUTPUT = 279,
+     DROP = 280
    };
 #endif
 /* Tokens.  */
@@ -70,13 +79,22 @@
 #define AS 269
 #define AND 270
 #define OR 271
+#define BYE 272
+#define CREATE 273
+#define TABLE 274
+#define HEAP 275
+#define INSERT 276
+#define INTO 277
+#define SET 278
+#define OUTPUT 279
+#define DROP 280
 
 
 
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
-#line 26 "./source/Parser.y"
+#line 32 "./source/Parser.y"
 {
  	struct FuncOperand *myOperand;
 	struct FuncOperator *myOperator; 
@@ -86,11 +104,12 @@ typedef union YYSTYPE
 	struct OrList *myOrList;
 	struct AndList *myAndList;
 	struct NameList *myNames;
+	struct AttrList *myAttrList;
 	char *actualChars;
 	char whichOne;
 }
 /* Line 1529 of yacc.c.  */
-#line 94 "./source/y.tab.h"
+#line 113 "./source/y.tab.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

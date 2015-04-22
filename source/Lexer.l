@@ -35,7 +35,28 @@ void yyerror(char*s);
 
 %%
 
-"SELECT"    return(SELECT);
+
+
+
+"CREATE"    return(CREATE);
+
+"TABLE"     return(TABLE);
+
+"HEAP"      return(HEAP);
+
+"INSERT"    return(INSERT);
+
+"INTO"      return(INTO);
+
+"DROP"      return(DROP);
+
+"SET"     return(SET);
+
+"OUTPUT"    return(OUTPUT);
+
+"BYE"       return(BYE);
+
+"SELECT"		return(SELECT);
 
 "FROM"      return(FROM);
 

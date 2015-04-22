@@ -1,0 +1,4 @@
+catalog
+/Users/Migue/Documents/DBIDATA/output/
+/Users/Migue/Documents/DBIDATA/input/
+Statistics.txt

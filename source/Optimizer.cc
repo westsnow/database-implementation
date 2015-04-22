@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 
+
 void PrintOperand(struct Operand *pOperand)
 {
         if(pOperand!=NULL)
@@ -81,6 +82,7 @@ void PrintNameList(struct  NameList* list){
 	}
 }
 
+
 // from parser
 extern FuncOperator* finalFunction;
 extern TableList* tables;
@@ -90,16 +92,19 @@ extern NameList* attsToSelect;
 extern int distinctAtts;
 extern int distinctFunc;
 
-char* catalog_path = "/Users/westsnow/GitHub/database-implementation/source/catalog";
-// char* catalog_path = "/Users/Migue/Documents/DBIDATA/catalog";
+//from main
+extern char *catalog_path;
+
+
 int pipeid = 1;
 using namespace std;
 
 Optimizer::Optimizer(Statistics *st){
 
-	s = st;
-	s->init();
-	planRoot = NULL;
+	s = new Statistics( *(st) );
+	//s->init();
+	planRoot = NULL;	
+
 }
 
 void Optimizer::planQuery(){

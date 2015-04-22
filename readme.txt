@@ -1,5 +1,5 @@
 Team Members(name + ufid):
-shuai wu		78892935
+shuai wu		    78892935
 Miguel Rodriguez	81984646
 
 

@@ -1,8 +1,0 @@
-customer|orders 99999
--c_mktsegment 5
--o_custkey 150000
--c_custkey 150000
--o_orderdate 3650
--o_orderkey 1500000
-lineitem 6001215
--l_orderkey 1500000

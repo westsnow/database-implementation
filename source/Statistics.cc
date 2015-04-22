@@ -103,9 +103,9 @@ void Statistics::CopyRel(char *oldName, char *newName)
 
  	ifstream stat_file;
  	string line;
- 	cout<<"before reading file"<<endl;
+ 	//cout<<"before reading file"<<endl;
  	stat_file.open(fromWhere);
- 	cout<<"have read file"<<endl;
+ 	//cout<<"have read file"<<endl;
  	string relName;
 
  	while(getline(stat_file, line)){
@@ -389,7 +389,7 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
 
 					//tableNameOfLeft = getTableNameFromAttr(relNames[0]);
 					//tableNameOfRight = getTableNameFromAttr(relNames[1]);
-					cout<<tableNameOfLeft<<" - "<<tableNameOfRight<<endl;
+					//cout<<tableNameOfLeft<<" - "<<tableNameOfRight<<endl;
 					
 
 					double dis1 = relInfo[tableNameOfLeft]->attInfo[leftValue];

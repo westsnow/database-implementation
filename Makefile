@@ -22,7 +22,7 @@ GLIST = GtestLoad.o
 GOBJ_FILES = $(addprefix $(BIN), $(GLIST))
 
 #LIST = Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o Pipe.o BigQ.o
-LIST = Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o Pipe.o BigQ.o Function.o RelOp.o Statistics.o Optimizer.o 
+LIST = Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o Pipe.o BigQ.o Function.o RelOp.o Statistics.o Optimizer.o ExecutionEngine.o
 OBJ_FILES = $(addprefix $(BIN), $(LIST))
 
 

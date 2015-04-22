@@ -19,6 +19,12 @@
 	struct NameList *attsToSelect; // the set of attributes in the SELECT (NULL if no such atts)
 	int distinctAtts; // 1 if there is a DISTINCT in a non-aggregate query 
 	int distinctFunc;  // 1 if there is a DISTINCT in an aggregate query
+	char *newtable;
+	char *newfile;
+	char *oldtable;
+	char *deoutput;
+	struct AttrList *newattrs;
+	bool bye;
 
 %}
 
@@ -32,6 +38,7 @@
 	struct OrList *myOrList;
 	struct AndList *myAndList;
 	struct NameList *myNames;
+	struct AttrList *myAttrList;
 	char *actualChars;
 	char whichOne;
 }
@@ -50,6 +57,18 @@
 %token AS
 %token AND
 %token OR
+%token BYE
+
+%token CREATE
+%token TABLE
+%token HEAP
+%token INSERT
+%token INTO
+%token SET
+%token OUTPUT
+%token DROP
+
+
 
 %type <myOrList> OrList
 %type <myAndList> AndList
@@ -61,6 +80,7 @@
 %type <myTables> Tables
 %type <myBoolOperand> Literal
 %type <myNames> Atts
+%type <myAttrList> NewAtts
 
 %start SQL
 
@@ -86,6 +106,34 @@ SQL: SELECT WhatIWant FROM Tables WHERE AndList
 	tables = $4;
 	boolean = $6;	
 	groupingAtts = $9;
+}
+| CREATE TABLE Name '(' NewAtts ')' AS HEAP
+{
+	newtable = $3;
+	newattrs = $5;
+        YYACCEPT;
+}
+| INSERT String INTO Name
+{
+	newfile = $2;
+	oldtable = $4;
+        YYACCEPT;
+}
+| DROP TABLE Name
+{
+	oldtable = $3;
+        YYACCEPT;
+}
+
+| SET OUTPUT Name
+{
+	deoutput = $3;
+        YYACCEPT;
+}
+| BYE 
+{
+	bye = true;	
+	YYACCEPT;
 };
 
 WhatIWant: Function ',' Atts 
@@ -124,6 +172,33 @@ Function: SUM '(' CompoundExp ')'
 {
 	distinctFunc = 1;
 	finalFunction = $4;
+};
+
+NewAtts: Name Name
+{
+	$$ = (struct AttrList *) malloc (sizeof (struct AttrList));
+	$$->name = $1;
+	if(strcmp($2,"INTEGER")==0)
+		$$->type = 0;
+	else if(strcmp($2,"DOUBLE")==0)
+		$$->type = 1;
+	else if(strcmp($2,"STRING")==0)
+		$$->type = 2;
+	//$$->type = $2;
+	$$->next = NULL;
+}
+| Name Name ',' NewAtts
+{
+	$$ = (struct AttrList *) malloc (sizeof (struct AttrList));
+	$$->name = $1;
+	if(strcmp($2,"INTEGER")==0)
+		$$->type = 0;
+	else if(strcmp($2,"DOUBLE")==0)
+		$$->type = 1;
+	else if(strcmp($2,"STRING")==0)
+		$$->type = 2;
+	//$$->type = $4;
+	$$->next = $4;
 };
 
 Atts: Name
