@@ -689,7 +689,7 @@ int DBFile::Open (char *f_path) {
 
 	}
 	header_file.close();
-	printf("file opened");
+	// printf("file opened");
 
 	return generalVar->Open(f_path);
 	//cout<<"there are "<<opened_file.GetLength()<<" pages in the file"<<endl;

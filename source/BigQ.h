@@ -35,7 +35,6 @@ struct InnerPipeStruct
 	char *fileName;
 	std::vector<int> *recordCount;
 	std::vector<int> *pageCount;
-
 };
 
 using namespace std;

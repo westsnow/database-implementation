@@ -8,9 +8,9 @@ void* SelectFileWorkerThread(void *arg){
 	SelectFileStruct *sf = (SelectFileStruct *) arg;
 	Record r;
 	ComparisonEngine comp;
-	printf("start");
+	printf("select file work start\n");
 	sf->inFile->MoveFirst();
-	printf("move first");
+	printf("move first\n");
 	while(sf->inFile->GetNext(r)){
 		if (comp.Compare(&r, sf->literal, sf->selOp)){
 			//r.Print(new Schema ("/Users/Migue/Development/workspace_cpp/database-implementation/source/catalog", "partsupp")) ;

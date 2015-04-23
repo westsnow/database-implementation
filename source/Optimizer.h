@@ -49,7 +49,7 @@ class QueryPlanNode{
 		Schema *outSchema;
 		int outPipeID;
   		virtual void execute(Pipe** pipes, RelationalOp** relops) = 0;
-		virtual string toString() = 0;
+		virtual void toString() = 0;
 
 };
 
@@ -67,7 +67,7 @@ class TableNode : public QueryPlanNode {
 		void execute(Pipe** pipes, RelationalOp** relops);
 		void relatedSelectCNF(AndList *boolean, Statistics *s);
 		TableNode(char *name, char *alias, int outPipeID);
-		string toString();
+		void toString();
 };
 
 //Project Node
@@ -80,7 +80,7 @@ class ProjectNode : public QueryPlanNode {
 		void execute(Pipe** pipes, RelationalOp** relops);
 		int inPipeID;
 		ProjectNode(NameList* atts, QueryPlanNode* root, int pipeid);
-		string toString(); 
+		void toString(); 
 };
 
 
@@ -95,7 +95,7 @@ class JoinNode : public QueryPlanNode {
 
 		void relatedJoinCNF(AndList *boolean, Statistics *s);
 		JoinNode(int leftPipeID, int rightPipeID, int outPipeID);
-		string toString();
+		void toString();
 };
 
 class DuplicateRemovalNode : public QueryPlanNode {
@@ -104,7 +104,7 @@ class DuplicateRemovalNode : public QueryPlanNode {
 		DuplicateRemovalNode(QueryPlanNode* root, int outPipeID);
 		void execute(Pipe** pipes, RelationalOp** relops);
 
-		string toString();		
+		void toString();		
 };
 
 class SumNode : public QueryPlanNode {
@@ -112,7 +112,7 @@ class SumNode : public QueryPlanNode {
 		int inPipeID;
 		Function computeMe;
 		SumNode(struct FuncOperator* parseTree, QueryPlanNode* root, int outPipeID);
-		string toString();	
+		void toString();	
 		void execute(Pipe** pipes, RelationalOp** relops);
 };
 
@@ -123,7 +123,7 @@ class GroupByNode : public QueryPlanNode {
 		OrderMaker groupOrder;
 		Function computeMe;
 		GroupByNode(struct NameList* nameList, struct FuncOperator* parseTree, QueryPlanNode* root, int outPipeID);
-		string toString();
+		void toString();
 		void execute(Pipe** pipes, RelationalOp** relops) ;
 
 };
@@ -136,7 +136,7 @@ class WriteOutNode : public QueryPlanNode {
 		WriteOutNode(QueryPlanNode* root, int outPipeID, string fileName);
 		void execute(Pipe** pipes, RelationalOp** relops) ;
 
-		string toString();
+		void toString();
 	
 };
 

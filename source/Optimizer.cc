@@ -103,7 +103,7 @@ using namespace std;
 Optimizer::Optimizer(Statistics *st){
 
 	s = new Statistics( *(st) );
-	//s->init();
+	// s->init();
 	planRoot = NULL;	
 
 }
@@ -112,7 +112,7 @@ void Optimizer::executeQuery(){
     Pipe** pipes = new Pipe*[numNodes+5];
     RelationalOp** relops = new RelationalOp*[numNodes+5];
     planRoot->execute(pipes, relops);
-    for (int i=0; i<numNodes; ++i)
+    for (int i=1; i<=numNodes; ++i)
       relops[i] -> WaitUntilDone();
 }
 
@@ -236,7 +236,7 @@ void Optimizer::createJoinNodes(){
 }
 
 void Optimizer::createWriteOutNodes(string fileName) {
-	planRoot = new WriteOutNode(planRoot, pipeid++, fileName);
+	planRoot = new WriteOutNode(planRoot, pipeid, fileName);
 }
 
 void Optimizer::createDistinctNodes() {
@@ -512,20 +512,7 @@ void TableNode::relatedSelectCNF(AndList *boolean, Statistics *s){
 
 }
 
-string TableNode::toString(){
 
-	cout<<"***************************"<<endl;
-	cout<<"Select From File Operation"<<endl;
-	cout<<"Table "<<tableName<<" AS "<<tableAlias<<endl;
-	cout<<"Cost: "<<cost<<endl;
-	cout<<"Input file: "<<endl;
-	cout<<"Output pipe Id: "<<outPipeID<<endl;
-	cout<<"Applied CNF: "<<endl;
-		cond.Print();
-	cout<<"Output Schema:"<<endl;
-		outSchema->Print();
-
-}
 
 
 /*
@@ -624,7 +611,7 @@ void JoinNode::relatedJoinCNF(AndList *boolean, Statistics *s){
 
 
 }
-string GroupByNode::toString(){
+void GroupByNode::toString(){
 	cout<<"***************************"<<endl;
 	cout<<"GroupBy Operation"<<endl;
 	cout<<"child Input: "<<children[0]->outPipeID<<endl;
@@ -636,9 +623,8 @@ string GroupByNode::toString(){
 	groupOrder.Print();
 	cout<<"outSchema "<<endl;
 	outSchema->Print();
-	return "";
 }
-string SumNode::toString(){
+void SumNode::toString(){
 	cout<<"***************************"<<endl;
 	cout<<"Sum Operation"<<endl;
 	cout<<"child Input: "<<children[0]->outPipeID<<endl;
@@ -649,9 +635,8 @@ string SumNode::toString(){
 	cout<<"outSchema "<<endl;
 	outSchema->Print();
 
-	return "";
 }
-string ProjectNode::toString(){
+void ProjectNode::toString(){
 	cout<<"***************************"<<endl;
 	cout<<"Project Operation"<<endl;
 	cout<<"child Input: "<<children[0]->outPipeID<<endl;
@@ -659,9 +644,8 @@ string ProjectNode::toString(){
 	// cout<<"Cost: "<<cost<<endl;
 	cout<<"outSchema "<<endl;
 	outSchema->Print();
-	return "";
 }
-string DuplicateRemovalNode::toString(){
+void DuplicateRemovalNode::toString(){
 	cout<<"***************************"<<endl;
 	cout<<"Distinct Operation"<<endl;
 	cout<<"child Input: "<<children[0]->outPipeID<<endl;
@@ -669,9 +653,8 @@ string DuplicateRemovalNode::toString(){
 	// cout<<"Cost: "<<cost<<endl;
 	cout<<"outSchema "<<endl;
 	outSchema->Print();
-	return "";
 }
-string WriteOutNode::toString(){
+void WriteOutNode::toString(){
 	cout<<"***************************"<<endl;
 	cout<<"WriteOut Operation"<<endl;
 	cout<<"child Input: "<<children[0]->outPipeID<<endl;
@@ -679,9 +662,21 @@ string WriteOutNode::toString(){
 	// cout<<"Cost: "<<cost<<endl;
 	cout<<"outSchema "<<endl;
 	outSchema->Print();
-	return "";
 }
-string JoinNode::toString(){
+void TableNode::toString(){
+
+	cout<<"***************************"<<endl;
+	cout<<"Select From File Operation"<<endl;
+	cout<<"Table "<<tableName<<" AS "<<tableAlias<<endl;
+	cout<<"Cost: "<<cost<<endl;
+	cout<<"Input file: "<<endl;
+	cout<<"Output pipe Id: "<<outPipeID<<endl;
+	cout<<"Applied CNF: "<<endl;
+		cond.Print();
+	cout<<"Output Schema:"<<endl;
+		outSchema->Print();
+}
+void JoinNode::toString(){
 
 	cout<<"***************************"<<endl;
 	cout<<"Join Operation"<<endl;
@@ -696,16 +691,24 @@ string JoinNode::toString(){
 }
 
 void TableNode::execute(Pipe** pipes, RelationalOp** relops){
+  cout<<"exe...select file"<<endl;
+
   string dbName = string(tableName) + ".bin";
   string finalPath = string(dbfile_dir) + dbName;
+  cout<<finalPath<<endl;
+  cout<<"open dbfile"<<endl;
   dbFile.Open((char*)finalPath.c_str());
+    cout<<"opened dbfile"<<endl;
+
   SelectFile* sf = new SelectFile();
   pipes[outPipeID] = new Pipe(PIPE_SIZE);
   relops[outPipeID] = sf;
+  cout<<"the outPipeid is "<<outPipeID<<endl;
   sf->Run(dbFile, *(pipes[outPipeID]), cond, literal);
 }
 
 void ProjectNode::execute(Pipe** pipes, RelationalOp** relops){
+	cout<<"exe...project"<<endl;
 	Project* p = new Project();
 	children[0] -> execute(pipes, relops);
 	pipes[outPipeID] = new Pipe(PIPE_SIZE);
@@ -722,6 +725,7 @@ void JoinNode::execute(Pipe** pipes, RelationalOp** relops){
   	relops[outPipeID] = j;
   	j -> Run(*pipes[children[0]->outPipeID], *pipes[children[1]->outPipeID], *pipes[outPipeID], cond, literal);
 }
+
 
 
 void DuplicateRemovalNode::execute(Pipe** pipes, RelationalOp** relops){
@@ -741,6 +745,7 @@ void SumNode::execute(Pipe** pipes, RelationalOp** relops){
 	s->Run(*pipes[children[0]->outPipeID], *pipes[outPipeID], computeMe);
 }
 
+
 //void Run (Pipe &inPipe, Pipe &outPipe, OrderMaker &groupAtts, Function &computeMe);
 void GroupByNode::execute(Pipe** pipes, RelationalOp** relops){
 	children[0]->execute(pipes, relops);
@@ -752,12 +757,11 @@ void GroupByNode::execute(Pipe** pipes, RelationalOp** relops){
 
 //	void Run (Pipe &inPipe, FILE *outFile, Schema &mySchema);
 void WriteOutNode::execute(Pipe** pipes, RelationalOp** relops){
+	cout<<"exe...writeout"<<endl;
 	children[0]->execute(pipes, relops);
 	WriteOut * wo = new WriteOut();
 	relops[outPipeID] = wo;	
 	FILE *writefile = fopen ((char*)outFileName.c_str(), "w");
 	wo->Run(*pipes[children[0]->outPipeID], writefile, *outSchema);
 }
-
-
 
