@@ -146,7 +146,7 @@
 	char *oldtable;
 	char *deoutput;
 	struct AttrList *newattrs;
-	bool bye;
+	bool bye = false;
 
 
 

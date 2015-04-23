@@ -23,7 +23,7 @@ Heap::Heap(): GeneralDBFile(){
 }
 
 Heap::~Heap(){
-
+	//asjndn
 }
 
 
@@ -59,14 +59,14 @@ int Heap::Load (Schema &f_schema, char *loadpath) {
 
 	Page page_buffer = Page();
 
-
+	
 	FILE *tableFile = fopen (loadpath, "r");
 	Record tmp;
 	//open file to write records
-
    	while(tmp.SuckNextRecord(&f_schema, tableFile) ){
 		//tmp.Print(&lineitem);
 		if(page_buffer.Append(&tmp)){
+		
 		}
 		else{
 			opened_file.AddPageToEnd(&page_buffer);
@@ -82,8 +82,12 @@ int Heap::Load (Schema &f_schema, char *loadpath) {
 }
 
 int Heap::Open (char *f_path) {
+	
 	opened_file.Open(1, f_path);
 	//cout<<"there are "<<opened_file.GetLength()<<" pages in the file"<<endl;
+	if( !opened_file.isOpen())
+		return 0;
+
 	return 1;
 }
 

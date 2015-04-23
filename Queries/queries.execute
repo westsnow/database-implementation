@@ -72,3 +72,8 @@ GROUP BY l_orderkey, o_orderdate, o_shippriority
 
 ANSWER: 7 rows (41.2 sec)
 ===========================================================
+
+
+
+
+

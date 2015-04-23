@@ -1,7 +1,7 @@
 #include "Statistics.h"
 #include <stdio.h>
 #include <string.h>
-
+#include <iomanip>
 // typedef struct _RelStat{
 // 	int numTuples;
 // 	hash_map<char*, int> attInfo;
@@ -109,22 +109,25 @@ void Statistics::CopyRel(char *oldName, char *newName)
  	string relName;
 
  	while(getline(stat_file, line)){
-
+ 		//cout<<line<<endl;
  		if(line.substr(0,1).compare("-")!= 0){
  			int idx = line.find(" ");
  			relName = "";
- 			relName = line.substr(1,idx-1);
- 			int numTuples = atoi(line.substr(idx+1, line.length()-idx-1).c_str());
+ 			relName = line.substr(0,idx);
+ 			int numTuples = atoi(line.substr(idx+1).c_str());
  			RelStat* tmp = new RelStat;
  			tmp->numTuples = numTuples;
  			relInfo[relName] = tmp;
+ 			//cout<<relName<<": "<<numTuples<<endl;
  		}
  		else{
  			int idx = line.find(" ");
  			string attName = "";
- 			attName = line.substr(0,idx);
- 			int numDistincts = atoi(line.substr(idx+1, line.length()-idx-1).c_str());
+ 			attName = line.substr(1,idx-1);
+ 			int numDistincts = atoi(line.substr(idx+1).c_str());
  			relInfo[relName]->attInfo[attName] = numDistincts;
+ 			//cout<<attName<<": "<<numDistincts<<endl;
+
  		}
  	}
 
@@ -140,12 +143,12 @@ void Statistics::CopyRel(char *oldName, char *newName)
  			r != relInfo.end();
  			++r) // for each item in the unordered map:
  	{
- 	    stat_file<<r->first<<" "<<r->second->numTuples<<endl;
+ 	    stat_file<<setprecision(0)<<r->first<<" "<<(int)r->second->numTuples<<endl;
  	    for (unordered_map<string, int>::iterator att = r->second->attInfo.begin();
  	    			att != r->second->attInfo.end();
  	    			++att) // for each item in the hash map:
  	    	{
- 	    		stat_file<<"-"<<att->first<<" "<<att->second<<endl;
+ 	    		stat_file<<"-"<<att->first<<" "<<(int)att->second<<endl;
  	    	}
  	}
 
@@ -335,6 +338,7 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numToJoin)
 {
 		
+		
 		struct AndList* andList = parseTree;
 		struct OrList* orList = NULL;
 		double result = 0.0;
@@ -477,14 +481,14 @@ void Statistics::init(){
 	AddAtt(relName[2], "p_container",40);
 	
 	//customer
-	AddRel(relName[3],150000);
+	AddRel(relName[3], 150000);
 	AddAtt(relName[3], "c_custkey",150000);
 	AddAtt(relName[3], "c_nationkey",25);
 	AddAtt(relName[3], "c_mktsegment",5);
 	AddAtt(relName[3], "c_name",333);
 	
 	//lineitem
-	AddRel(relName[4],6001215);
+	AddRel(relName[4], 6001215);
 	AddAtt(relName[4], "l_returnflag",3);
 	AddAtt(relName[4], "l_discount",11);
 	AddAtt(relName[4], "l_shipmode",7);
@@ -495,19 +499,19 @@ void Statistics::init(){
 	AddAtt(relName[4], "l_quantity",7655);
 	
 	//orders
-	AddRel(relName[5],1500000);
+	AddRel(relName[5], 1500000);
 	AddAtt(relName[5], "o_orderkey",1500000);
 	AddAtt(relName[5], "o_custkey",150000);
 	AddAtt(relName[5], "o_orderdate",150000);
 	
 	//supplier
-	AddRel(relName[6],10000);
+	AddRel(relName[6], 10000);
 	AddAtt(relName[6], "s_suppkey",10000);
 	AddAtt(relName[6], "s_nationkey",25);
 	AddAtt(relName[6], "s_acctbal",765);
 	
 	//partsupp
-	AddRel(relName[7],800000);
+	AddRel(relName[7], 800000);
 	AddAtt(relName[7], "ps_suppkey", 10000);
 	AddAtt(relName[7], "ps_partkey", 200000);
 
