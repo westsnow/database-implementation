@@ -333,6 +333,7 @@ void* WorkerThread(void * arg)	{
 
 	remove(fileName);
 	out->ShutDown ();
+	printf("out pipe shut down\n");
 
 	pthread_exit(NULL); 
 

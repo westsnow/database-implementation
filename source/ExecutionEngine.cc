@@ -131,7 +131,7 @@ void ExecutionEngine::select(){
 
 	Optimizer *optimizer = new Optimizer(s);
 	optimizer->planQuery();
-  	optimizer->executeQuery();
+  optimizer->executeQuery();
 
 }
  void ExecutionEngine::clear(){

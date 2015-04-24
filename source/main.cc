@@ -61,7 +61,7 @@ int main()
 		cout<<"\nsql>> ";
 		yyparse();
 		
-		engine->execute();
+		engine->select();
 		//engine->select();
 		//optimizer->planQuery();
 		
