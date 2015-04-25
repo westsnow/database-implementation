@@ -456,7 +456,7 @@ void* GroupByWorkerThread(void *arg){
 				at.name = "SUM";
 				char String[20];
 				if(t == Int){
-					printf(String,"%d|", result_int);
+					sprintf(String,"%d|", result_int);
 					at.myType = Double;
 				}else{
 					sprintf(String,"%f|", result_doble);

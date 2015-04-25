@@ -232,7 +232,6 @@ void Optimizer::createJoinNodes(){
 	if(planRoot == NULL){
 		planRoot = tableNodes[0];
 	}
-
 }
 
 void Optimizer::createWriteOutNodes(string fileName) {
@@ -713,17 +712,18 @@ void ProjectNode::execute(Pipe** pipes, RelationalOp** relops){
 	children[0] -> execute(pipes, relops);
 	pipes[outPipeID] = new Pipe(PIPE_SIZE);
 	relops[outPipeID] = p;
-	p -> Run( *pipes[children[0]->outPipeID], *pipes[outPipeID], keepMe, numAttsIn, numAttsOut );
+	p -> Run( *(pipes[children[0]->outPipeID]), *(pipes[outPipeID]), keepMe, numAttsIn, numAttsOut );
 }
 
 
 void JoinNode::execute(Pipe** pipes, RelationalOp** relops){
+	cout<<"exe...join"<<endl;
 	children[0]->execute(pipes, relops);
 	children[1]->execute(pipes, relops);
 	Join * j = new Join();
 	pipes[outPipeID] = new Pipe(PIPE_SIZE);
   	relops[outPipeID] = j;
-  	j -> Run(*pipes[children[0]->outPipeID], *pipes[children[1]->outPipeID], *pipes[outPipeID], cond, literal);
+  	j -> Run(*(pipes[children[0]->outPipeID]), *(pipes[children[1]->outPipeID]), *(pipes[outPipeID]), cond, literal);
 }
 
 
@@ -738,6 +738,7 @@ void DuplicateRemovalNode::execute(Pipe** pipes, RelationalOp** relops){
 
 
 void SumNode::execute(Pipe** pipes, RelationalOp** relops){
+	cout<<"exe...sum"<<endl;
 	children[0]->execute(pipes, relops);
 	Sum * s = new Sum();
 	pipes[outPipeID] = new Pipe(PIPE_SIZE);
@@ -762,6 +763,6 @@ void WriteOutNode::execute(Pipe** pipes, RelationalOp** relops){
 	WriteOut * wo = new WriteOut();
 	relops[outPipeID] = wo;	
 	FILE *writefile = fopen ((char*)outFileName.c_str(), "w");
-	wo->Run(*pipes[children[0]->outPipeID], writefile, *outSchema);
+	wo->Run(*(pipes[children[0]->outPipeID]), writefile, *outSchema);
 }
 
