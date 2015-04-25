@@ -120,7 +120,17 @@ void ExecutionEngine::insertInto(){
 }
 
 void ExecutionEngine::dropTable(){
-	cout<<"Drop Table";
+	
+	if(existance(oldtable)){
+
+		//Delete from statistics
+		//s->delete_table(oldtable);
+
+		//Delete from schema
+		//Delete DBFiles
+
+	}
+
 }
 
 void ExecutionEngine::setOutput(char *mode){
@@ -131,7 +141,7 @@ void ExecutionEngine::select(){
 
 	Optimizer *optimizer = new Optimizer(s);
 	optimizer->planQuery();
-  optimizer->executeQuery();
+  	optimizer->executeQuery();
 
 }
  void ExecutionEngine::clear(){

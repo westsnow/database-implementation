@@ -87,3 +87,5 @@ INSERT 'facts.tbl' INTO facts
 
 SELECT f.entity, f.value FROM facts AS f WHERE (f.relation = 'CANADA')
 
+DROP TABLE facts
+

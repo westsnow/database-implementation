@@ -455,6 +455,11 @@ void Statistics::clearStats(){
 
 }
 
+void Statistics::deteleTable(char *oldTableName){
+
+	
+}
+
 void Statistics::init(){
 
 

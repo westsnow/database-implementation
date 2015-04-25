@@ -6,7 +6,8 @@
 #include <stdlib.h>
 #include <iostream>
 #include <math.h>
-
+#include <algorithm>
+#include <climits>
 
 #include "Comparison.h"
 #include "Function.h"
